@@ -1,0 +1,105 @@
+<!--  Util.xml                                          Frank Lübeck  -->
+
+<Chapter Label="ch:Utils">
+<Heading>Utilities from the <Package>StandardFF</Package> package</Heading>
+
+<Section Label="sec:SimpleRand">
+<Heading>A very basic random number generator</Heading>
+
+<#Include Label="SimpleRandomRange">
+
+</Section>
+
+<Section Label="sec:SEBasis">
+<Heading>Finding linear combinations</Heading>
+
+<#Include Label="FindLinearCombination">
+
+</Section>
+
+<Section Label="sec:Conway">
+<Heading>Connection to Conway polynomials</Heading>
+
+<#Include Label="FindConjugateZeroes">
+<#Include Label="ZeroesConway">
+<#Include Label="SteinitzPairConwayGenerator">
+
+</Section>
+
+<Section Label="sec:DLog">
+<Heading>Discrete logarithms</Heading>
+
+<#Include Label="DLog">
+
+</Section>
+
+<Section Label="sec:BrauerChar">
+<Heading>Brauer characters with respect to different lifts</Heading>
+
+Let  <M>G</M> be  a  finite group,  <M>g  \in G</M>,  and  <M>\rho: G  \to
+GL(d,p^n)</M>be a representation over a finite field. The Brauer character
+value  <M>\chi(g)</M>  of  <M>\rho</M>  at  <M>g</M>  is  defined  as  the
+sum  of the  eigenvalues of  <M>\rho(g)</M>  in the  algebraic closure  of
+<M>\mathbb{F}_p</M> lifted to complex roots of unity.
+<P/>
+The lift  used by <Ref  BookName="Reference" Oper="BrauerCharacterValue"/>
+and in the computation of  many Brauer character tables (available through
+the <Package>CTblLib</Package>  package) is defined by  Conway polynomials
+(see <Ref BookName="Reference" Func="ConwayPolynomial"/>): They define the
+primitive root  <C>Z(q)</C> in <C>GF(q)</C>  which is mapped  to <M>\exp(2
+\pi i / (q-1))</M> (that is <C>E(q-1)</C> in &GAP;).
+<P/>
+Another     lift      is     defined     by     the      function     <Ref
+Func="StandardCyclicGenerator"/>   provided   by   this   package.   Here,
+<C>StandardCyclicGenerator(F, m)</C> is mapped to <M>\exp(2 \pi i / m)</M>
+(that is <C>E(m)</C> in &GAP;).
+<P/>
+The following function translates between these two lifts.
+
+<#Include Label="StandardValuesBrauerCharacter">
+
+</Section>
+
+<Section Label="sec:FactorData">
+<Heading>Known factorizations of multiplicative group orders</Heading>
+
+<#Include Label="CANFACT">
+
+</Section>
+
+<Section Label="sec:Tests">
+<Heading>Some loops for  <Package>StandardFF</Package></Heading>
+
+<#Include Label="TestLoops">
+
+</Section>
+
+<Section Label="sec:nondoc">
+<Heading>Undocumented features</Heading>
+We mention some features of this package which may be temporary, vanish or
+changed.
+
+The    functions   <Ref    Func="StandardFiniteFieldTower"/>   and    <Ref
+Func="StandardPrimeDegreePolynomial"/>    take   an    optional   argument
+<C>"Trace"</C>. In  that case  different irreducible polynomials  of prime
+degree  <M>r</M> are  computed  when <M>r</M>  is  not the  characteristic
+<M>p</M> of  the field and  <M>r</M> does  not divide <M>p-1</M>.  It uses
+computations in larger  fields which contain <M>r</M>-th roots  of one and
+traces  into <M>r</M>-power  extensions over  the prime  field (see  <Cite
+Key="StdFFCyc" Where="5.4"/> for details).
+<P/>
+The  function  <C>SFFHelper.GFCyclotomicPolynomials(r,  q)</C> may  be  of
+independent interest: For a power <M>q</M> of a prime <M>p</M> and another
+prime  <M>r</M> it  returns  the irreducible  factors  of the  <M>r</M>-th
+cyclotomic polynomial <M>(X^r-1)/(X-1)</M> over <C>GF(q)</C>.
+<P/>
+A   directory  <F>ntl</F>   contains  some   simple  standalone   programs
+which  use  the  library  NTL  <Cite  Key="NTL"/>.  There  is  a  function
+<C>StandardIrreducibleCoeffListNTL(K, d, a)</C> which  can be used instead
+of  <C>StandardIrreducibleCoeffListNTL(K, d,  a)</C>  when  <C>K</C> is  a
+prime field.  This gives a  good speedup for  not too small  <C>d</C>, say
+<C>d</C> <M>>500</M>.
+</Section>
+
+</Chapter>
+

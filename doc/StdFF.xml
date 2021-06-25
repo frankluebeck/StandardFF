@@ -1,0 +1,83 @@
+<!--  StdFF.xml                                          Frank Lübeck  -->
+
+<Chapter Label="ch:StdFF">
+<Heading>Standard finite fields</Heading>
+
+<Section Label="sec:StdFFIntro">
+<Heading>Definition of standard finite fields</Heading>
+
+In <Cite Key="StdFFCyc" /> we define  for each prime <M>p</M> and positive
+integer <M>n</M> a standardized model for the finite field with <M>p^n</M>
+elements. This is done by defining  for each prime <M>r</M> polynomials of
+degree <M>r</M> which define <M>r</M>-power  extensions of the prime field
+<M>GF(p)</M> and by combining these for all <M>r | n</M> in a unique tower
+of finite fields where the successive degrees are non-decreasing primes.
+<P/>
+This construction  has the nice property  that whenever <M>n |  m</M> then
+the tower basis of  the field with <M>p^n</M> elements is  a subset of the
+tower basis of  the field with <M>p^m</M> elements (as  monomials over the
+prime field <M>GF(p)</M>).
+<P/>
+Via  this   construction  each  element   in  the  algebraic   closure  of
+<M>GF(p)</M> can be identified by its degree <M>d</M> over the prime field
+and  its  Steinitz number  in  the  field  with <M>p^d</M>  elements  (see
+section&nbsp;<Ref Sect="sec:DefTower"/> for definitions of the tower basis
+and the Steinitz numbers).
+<P/>
+Since arithmetic in simple algebraic  extensions is more efficient than in
+iterated extensions we also provide  the field with <M>p^n</M> elements as
+simple extension with  efficient maps from and to  the tower construction.
+For this we use a standardized  primitive element of the construction (the
+sum of the generators of the maximal subfields of prime power degree).
+</Section>
+
+<Section Label="sec:CreateFF">
+<Heading>Creating standard finite fields</Heading>
+
+<#Include Label="FF">
+<#Include Label="IsFF">
+
+</Section>
+
+<Section Label="sec:ElementsFF">
+<Heading>Elements in standard finite fields</Heading>
+
+For  fields in  <Ref  Filt="IsStandardFiniteFieldTower"/> we  can use  all
+functions  described  in section  <Ref  Sect="sec:TowerFun"/>  to map  its
+elements to and from polynomials, vectors with respect to the tower basis,
+or Steinitz numbers.
+<P/>
+For fields in <Ref  Filt="IsStandardFiniteField"/> we provide functions to
+map their elements to and from  the corresponding tower elements, and also
+shortcuts for the maps to and from vectors and Steinitz numbers.
+<P/>
+
+<#Include Label="FFElmConv">
+
+</Section>
+
+<Section Label="sec:FFEmbed">
+<Heading>Embeddings of standard finite fields</Heading>
+
+For a  standard finite field <C>F</C>  and its tower <C>T  := Tower(F)</C>
+the list  <C>GeneratorsOfField(T)</C> contains the residue  classes of the
+indeterminates  defining  the  prime  power extensions  of  <C>T</C>.  Our
+standardized primitive  element of any  subfield of  <C>T</C> is a  sum of
+appropriate elements in this list of generators.
+<P/>
+The tower basis of <C>T</C> contains the tower basis of any subfield. This
+yields a construction of canonical embeddings of all subfields of <C>F</C>
+into  <C>F</C>.  And  one  can  easily  read  off  the  smallest  subfield
+containing an element in <C>F</C>  or <C>T</C> from its coefficient vector
+with respect to the tower basis.  Each element of the algebraic closure of
+<C>FF(p,1)</C>  is uniquely  determined  by its  degree  <C>d</C> and  its
+Steinitz number in <C>FF(p, d)</C>.
+
+<#Include Label="SteinitzPair">
+<#Include Label="FFEmbedding">
+<#Include Label="StandardIsomorphismGF">
+
+</Section>
+
+</Chapter>
+

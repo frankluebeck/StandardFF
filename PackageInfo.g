@@ -1,0 +1,78 @@
+#############################################################################
+##  
+##  PackageInfo.g file for the StandardFF package.               Frank Lübeck
+##  
+
+SetPackageInfo( rec(
+
+PackageName := "StandardFF",
+Subtitle := "Standard finite fields and cyclic generators",
+Version := "0.3",
+Date := "25/06/2021", # dd/mm/yyyy format
+
+Persons := [
+  rec(
+    FirstNames := "Frank",
+    LastName := "Lübeck",
+    WWWHome := "https://www.math.rwth-aachen.de/~Frank.Luebeck/",
+    Email := "Frank.Luebeck@Math.RWTH-Aachen.De",
+    IsAuthor := true,
+    IsMaintainer := true,
+    PostalAddress := "Dr.Frank Lübeck\nLehrstuhl für Algebra und Zahlentheorie\nRWTH Aachen\nPontdriesch 14/16\n52062 Aachen\nGERMANY\n",
+    Place := "Aachen",
+    Institution := "Lehrstuhl für Algebra und Zahlentheorie, RWTH Aachen",
+  ),
+],
+
+#SourceRepository := rec( Type := "TODO", URL := "URL" ),
+#IssueTrackerURL := "TODO",
+#SupportEmail := "TODO",
+
+PackageWWWHome := "https://www.math.rwth-aachen.de/~Frank.Luebeck/gap/StandardFF/",
+
+PackageInfoURL := Concatenation( ~.PackageWWWHome, "PackageInfo.g" ),
+README_URL     := Concatenation( ~.PackageWWWHome, "README.md" ),
+ArchiveURL     := Concatenation( ~.PackageWWWHome,
+                                 "/", ~.PackageName, "-", ~.Version ),
+
+ArchiveFormats := ".tar.gz",
+
+##  Status information. Currently the following cases are recognized:
+##    "accepted"      for successfully refereed packages
+##    "submitted"     for packages submitted for the refereeing
+##    "deposited"     for packages for which the GAP developers agreed
+##                    to distribute them with the core GAP system
+##    "dev"           for development versions of packages
+##    "other"         for all other packages
+##
+Status := "dev",
+
+AbstractHTML   :=  "",
+
+PackageDoc := rec(
+  BookName  := "StandardFF",
+  ArchiveURLSubset := ["doc"],
+  HTMLStart := "doc/chap0.html",
+  PDFFile   := "doc/manual.pdf",
+  SixFile   := "doc/manual.six",
+  LongTitle := "Standard finite fields and cyclic generators",
+),
+
+Dependencies := rec(
+  GAP := ">= 4.9",
+  NeededOtherPackages := [ [ "GAPDoc", ">= 1.6.1" ] ],
+  SuggestedOtherPackages := [ ],
+  ExternalConditions := [ ],
+),
+
+AvailabilityTest := function()
+        return true;
+    end,
+
+TestFile := "tst/testall.g",
+
+#Keywords := [ "TODO" ],
+
+));
+
+

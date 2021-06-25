@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE Book SYSTEM "gapdoc.dtd"
+   [ <!ENTITY StdFF "<Package>StandardFF</Package>">
+   ]>
+
+<!-- Documentation of the StandardFF package. 
+     Copyright 2020- by Frank Lübeck
+     Lehrstuhl für Algebra und Zahlentheorie, RWTH Aachen, Germany -->
+     
+<Book Name="StandardFF"> 
+
+<TitlePage>
+  <Title>&StdFF;</Title>
+  <Version>( Version 
+<#Include SYSTEM "../VERSION">
+ )
+  </Version>
+  <Author> Frank Lübeck 
+    <Email>Frank.Luebeck@Math.RWTH-Aachen.De</Email>
+    <Homepage>http://www.math.rwth-aachen.de/~Frank.Luebeck</Homepage>
+  </Author>
+  <Date>May 2021</Date>
+  <Copyright> &copyright; 2020- by Frank Lübeck <P/>
+<!-- We adopt the copyright regulations of &GAP; as detailed in the 
+     copyright notice in the &GAP; Reference Manual. -->
+    This package may be distributed under the terms and conditions of the
+    GNU Public License Version 3 or later,
+    see <URL>http://www.gnu.org/licenses</URL>.
+  </Copyright>
+</TitlePage>
+
+<TableOfContents/>
+
+<Body>
+
+<#Include SYSTEM "Intro.xml">
+<#Include SYSTEM "Towers.xml">
+<#Include SYSTEM "StdFF.xml">
+<#Include SYSTEM "StdCyc.xml">
+<#Include SYSTEM "Util.xml">
+
+
+</Body>
+
+<Bibliography Databases="StdFFBib.xml" />
+
+<TheIndex/>
+
+</Book>
+

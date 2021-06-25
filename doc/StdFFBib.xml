@@ -1,0 +1,29 @@
+<entry id="BrentFactors"><misc>
+  <author>
+    <name><first>Jonathan</first><last>Crombie</last></name>
+  </author>
+  <title>Factor collection <M>a^n \pm 1</M></title>
+  <note><URL>http://myfactorcollection.mooo.com:8090/</URL></note>
+</misc></entry>
+
+
+<entry id="StdFFCyc"><misc>
+  <author>
+    <name><first>Frank</first><last>Lübeck</last></name>
+  </author>
+  <title>Standard Generators of Finite Fields and their Cyclic Subgroups</title>
+  <journal>arXiv</journal>
+  <number>XXXXXX</number>
+  <year>2021</year>
+  <note><URL>https://www.arxiv.org/XXXXXX</URL></note>
+</misc></entry>
+
+
+<entry id="NTL"><misc>
+  <author>
+    <name><first>Victor</first><last>Shoup</last></name>
+  </author>
+  <title>NTL: A library for doing Number Theory</title>
+  <note><URL>https://libntl.org/</URL></note>
+</misc></entry>
+

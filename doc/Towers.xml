@@ -1,0 +1,67 @@
+
+<!--  Towers.xml                                          Frank Lübeck  -->
+
+<Chapter Label="ch:Towers">
+<Heading>Towers of finite algebraic field extensions</Heading>
+
+This chapter describes  some technical background of this  package and its
+implementation.
+
+<Section Label="sec:DefTower">
+<Heading>Definition of towers of fields</Heading>
+
+Let <M>K</M> be a field and <M>X_1, \ldots, X_n</M> be indeterminates over
+<M>K</M>. For  <M>i = 1,  2, \ldots, n</M>  let <M>f_i \in  K[X_1, \ldots,
+X_i]</M>  be  a polynomial  of  positive  degree  <M>d_i</M> in  the  last
+variable <M>X_i</M>.  We assume  that <M>K_i  = K[X_1,  \ldots, X_i]/(f_1,
+\ldots, f_i)</M>  are fields (that  is <M>f_i \textrm{ mod  }(f_1, \ldots,
+f_{{i-1}})</M> are  irreducible) for  all <M>i</M>.  So, <M>K_i</M>  is of
+degree <M>d_1 d_2 \cdots d_i</M> over the base field <M>K_0 = K</M>.
+<P/>
+The field <M>K_n</M>  has a natural ordered  <M>K</M>-basis with monomials
+as representatives in  the polynomial ring <M>K[X_1,  \ldots, X_n]</M>. We
+call this the  <E>tower basis</E> of <M>K_n</M>. We  define it recursively
+such  that  the  basis is  a  sequence  which  starts  with bases  of  all
+intermediate  fields in  the  tower.  The base  field  <M>K</M> has  basis
+<M>\{1\}</M>. If the basis  <M>B_{{i-1}}</M> of <M>K_{{i-1}}</M>is already
+constructed we get  a basis of <M>K_i</M>  by concatenating <M>(B_{{i-1}},
+B_{{i-1}}X_i, B_{{i-1}}X_i^2, \ldots, B_{{i-1}}X_i^{{d_i-1}})</M>.
+<P/>
+So, the  tower basis is  represented by  all monomials in  <M>X_1, \ldots,
+X_n</M>  where  <M>X_i</M> occurs  with  degree  <M>&lt; d_i</M>,  in  the
+described order.
+<P/>
+Now  let <M>K_0  = K  = \mathbb{F}_p</M>  be the  finite prime  field with
+<M>p</M>  elements. In  this case  we  define recursively  a numbering  of
+<M>K_n</M>, called the <E>Steinitz number</E>. We identify <M>\mathbb{F}_p
+=  \mathbb{Z}/(p)</M> and  assign  to  <M>x =  k  +  m \mathbb{Z}</M>  the
+Steinitz  number  <M>k</M>  if  <M>0  \leq k  &lt;  p</M>.  (In  &GAP;  we
+get  <M>k</M>  as  <C>IntFFE</C>(x).)  Assume  that  the  Steinitz  number
+map  <M>s</M>  is defined  on  <M>K_{{i-1}}</M>.  An element  <M>x</M>  of
+<M>K_i</M> is  uniquely represented  by a  polynomial <M>c_0  + c_1  X_i +
+\ldots  c_{{d_i-1}} X_i^{{d_i-1}}  \in  K_{{i-1}}[X_i]</M>.  Using <M>q  =
+|K_{{i-1}}|</M>  we  define <M>s(x)  :=  s(c_0)  +  s(c_1)  q +  \ldots  +
+s(c_{{d_i-1}})  q^{{d_i-1}}</M>.  
+<P/>
+Note that the  <M>p</M>-adic expansion of the  Steinitz number <M>s(x)</M>
+for <M>x  \in K_n</M>  yields the coeffients  of <M>x</M>  (interpreted in
+<M>\mathbb{F}_p</M>) with respect to the tower basis of <M>K_n</M>.
+</Section>
+
+<Section Label="sec:TowerFun">
+<Heading>Functions for towers of fields</Heading>
+
+<#Include Label="FiniteFieldTower">
+
+<#Include Label="TowerBasis">
+
+<#Include Label="EltPoly">
+
+<#Include Label="EltVec">
+
+<#Include Label="EltSteinitz">
+
+</Section>
+
+</Chapter>
+

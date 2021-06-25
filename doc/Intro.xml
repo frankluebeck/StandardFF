@@ -1,0 +1,62 @@
+
+<!--  Intro.xml                                          Frank Lübeck  -->
+
+<Chapter Label="ch:Intro">
+<Heading>Introduction to &StdFF; package</Heading>
+
+<Section Label="sec:Overview">
+<Heading>Aim</Heading>
+This   &GAP;-package  provides   a  reference   implementation  for   the 
+standardized  constructions of  finite  fields and  generators of  cyclic 
+subgroups defined in the article <Cite Key="StdFFCyc"/>.                  
+<P/>
+The main functions  are <Ref Func="FF"/> to construct the  finite field of
+order <M>p^n</M> and <Ref  Oper="StandardCyclicGenerator"/> to construct a
+standardized generator  of the  multiplicative subgroup  of a  given order
+<M>m</M>  in such  a  finite field.  This even  works  for known  divisors
+<M>m</M> of <M>p^n-1</M> when the full factorization of this number is not
+known.
+<P/>
+Each    field    of    order    <M>p^n</M>   comes    with    a    natural
+<M>\mathbb{F}_p</M>-basis which is  a subset of the natural  basis of each
+extension field  of order  <M>p^{nm}</M>. The  union of  these bases  is a
+basis  of  the  algebraic  closure of  <M>\mathbb{F}_p</M>.  Each  element
+of  the  algebraic  closure  can  be identified  by  its  degree  <M>d</M>
+over  its  prime field  and  a  number <M>0  \leq  k  \leq p^d-1</M>  (see
+<Ref Oper="SteinitzPair"/>)  or, equivalently,  by a  certain multivariate
+polynomial (see  <Ref Meth="AsPolynomial" Label="for elements  in standard
+finite  fields"/>).  This can  be  useful  for transferring  finite  field
+elements  between  programs which  use  the  same construction  of  finite
+fields.
+<P/>
+The  standardized  generators  of  multiplicative  cyclic  groups  have  a
+nice  compatibility   property:  There  is  a   unique  group  isomorphism
+from   the    multiplicative   group   <Alt    Not="Text"><Alt   Not="HTML
+noMathJax"><M>\bar{\mathbb{F}}_p^\times</M></Alt></Alt>  of the  algebraic
+closure  of  the  finite  field  with <M>p</M>  elements  into  the  group
+of  complex roots  of  unity  whose order  is  not  divisible by  <M>p</M>
+which  maps  a  standard  generator  of  order  <M>m</M>  to  <M>\exp(2\pi
+i/m)</M>. In particular, the minimal polynomials of standard generators of
+order  <M>p^n-1</M>  for  all  <M>n</M>  fulfill  the  same  compatibility
+conditions   as   Conway   polynomials  (see   <Ref   BookName="Reference"
+Func="ConwayPolynomial"/>). This can provide  an alternative for the lifts
+used  by  <Ref  BookName="Reference"  Attr="BrauerCharacterValue"/>  which
+works  for  a  much  wider  set of  finite  field  elements  where  Conway
+polynomials a very difficult or impossible to compute.
+<P/>
+A   translation  of   existing   Brauer  character   tables  relative   to
+the   lift   defined  by   Conway   polynomials   to  the   lift   defined
+by  our   <Ref  Oper="StandardCyclicGenerator"/>   is  provided   by  <Ref
+Func="StandardValuesBrauerCharacter"/>,   provided  the   relevant  Conway
+polynomials are known.
+<P/>
+The article  <Cite Key="StdFFCyc"/> also defines  a standardized embedding
+of  &GAP;s  finite  fields   constructed  with  <Ref  BookName="Reference"
+Func="GF"/>  into   the  algebraic   closure  of   the  the   prime  field
+<M>\mathbb{F}_p</M>  constructed   here.  This  is  available   with  <Ref
+Func="StandardIsomorphismGF"/>.
+
+</Section>
+
+</Chapter>
+

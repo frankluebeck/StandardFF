@@ -1,0 +1,43 @@
+<!--  StdCyc.xml                                          Frank Lübeck  -->
+
+<Chapter Label="ch:StdCyc">
+<Heading>Standard generators of cyclic groups</Heading>
+
+<Section Label="sec:StdCyc">
+<Heading>Generators of multiplicative groups</Heading>
+
+The multiplicative  group of each finite  field is cyclic and  so for each
+divisor  <M>m</M>  of its  order  there  is  a  unique subgroup  of  order
+<M>m</M>.
+<P/>
+In <Cite  Key="StdFFCyc" />  we define standardized  generators <M>x_m</M>
+of  these  cyclic  groups  in  the standard  finite  fields  described  in
+chapter <Ref  Chap="ch:StdFF"/> which fulfill the  following compatibility
+condition: If <M>k | m</M> then <M>x_m^{{m/k}} = x_k</M>.
+<P/>
+The condition  that <M>x_m</M>  can be  computed is  that <M>m</M>  can be
+factorized. (If  we do  not know  the prime divisors  of <M>m</M>  then we
+cannot show that a given element has order <M>m</M>.) Note that this means
+that we can compute <M>x_m</M> in  <C>FF(p,n)</C> when <M>m | (p^n -1)</M>
+and we know the prime divisors of <M>m</M>, even when the factorization of
+<M>(p^n-1)</M> is not known.
+<P/>
+In  the  case  that  the  factorization  of  <M>m  =  p^n-1</M>  is  known
+the  corresponding   <M>x_m</M>  is  a  standardized   primitive  root  of
+<C>FF(p,n)</C> that can be computed.
+<P/>
+Let  <M>l  |  n</M>  and  set  <M>m =  p^n-1</M>  and  <M>k  =  p^l-1</M>.
+Then  <M>x_m</M>   and  <M>x_k</M>   are  the  standard   primitive  roots
+of   <C>FF(p,n)</C>  and   <C>FF(p,l)</C>  (considered   as  subfield   of
+<C>FF(p,n)</C>),  respectively.   The  compatibity  condition   says  that
+<M>x_m^{{m/k}}  =   x_k</M>.  This  shows  that   the  minimal polynomials
+of  <M>x_m</M>   and  <M>x_k</M>   over  the   prime  field   fulfill  the
+same   compatibility   conditions   as  Conway   polynomials   (see   <Ref
+BookName="Reference" Func="ConwayPolynomial" />.
+
+<#Include Label="StandardCyclicGenerator">
+
+</Section>
+
+</Chapter>
+
