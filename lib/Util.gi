@@ -199,7 +199,7 @@ end);
 ##  function returns the discrete logarithm,  that is an integer <M>e</M> such
 ##  that <A>base</A><M>^e = </M> <A>x</A>.
 ##  <P/> 
-##  If  <A>m</A>  is  prime  then  Shank's  algorithm  is  used  (which  needs
+##  If  <A>m</A>  is  prime  then  Shanks'  algorithm  is  used  (which  needs
 ##  <M>O(\sqrt{<A>m</A>})</M> space and time). Otherwise  let <A>m</A> <M> = r
 ##  l</M> and  <M>e =  a +  b r</M>  with <M>0  \leq a  &lt; r</M>.  Then <M>a
 ##  =</M>  <C>DLog</C><M>(<A>base</A>^l, <A>x</A>^l,  r)</M> and  <M>b =  </M>
