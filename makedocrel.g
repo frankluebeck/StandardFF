@@ -25,8 +25,9 @@ GAPDocManualLab("StandardFF");
 CopyHTMLStyleFiles("doc");
 
 # further checks
-Print("Validating XML ...\n");
-v := ValidateGAPDoc([tree.input, tree.inputorigins]);
+#   add after release of GAPDoc 1.6.4
+##  Print("Validating XML ...\n");
+##  v := ValidateGAPDoc([tree.input, tree.inputorigins]);
 Print("Checking all manual examples ...\n");
 ex:=ExtractExamplesXMLTree(tree,"Chapter");
 RunExamples(ex);
