@@ -25,3 +25,5 @@ DeclareGlobalFunction("FetchMoreFactors");
 
 DeclareGlobalFunction("StandardValuesBrauerCharacter");
 DeclareGlobalFunction("IsGaloisInvariant");
+DeclareGlobalFunction("SmallestDegreeFrobeniusCharacterValue");
+DeclareGlobalFunction("StandardFrobeniusCharacterValue");

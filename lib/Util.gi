@@ -654,7 +654,14 @@ end);
 ##  Galois conjugates  of <A>bch</A> are  Brauer characters in  <A>tab</A>. If
 ##  this is the  case then different lifts will permute  the Galois conjugates
 ##  and all of them are Brauer characters with respect to any lift.
-##  
+##  <P/>
+##  WARNING: The result  of this function may not be  a valid Brauer character
+##  for  the  table <A>tab</A>  (that  is  an  integer linear  combination  of
+##  irreducible Brauer  characters in  <A>tab</A>). For  a proper  handling of
+##  several lifts  the data structure of  Brauer character tables needs  to be
+##  extended (it must refer to the lift), and then the result of this function
+##  should return a  Brauer character of another table that  refers to another
+##  lift.
 ##  <Example>gap> tab := BrauerTable("M", 19);
 ##  BrauerTable( "M", 19 )
 ##  gap> # cannot translate some values to different lift
@@ -717,4 +724,77 @@ InstallGlobalFunction(IsGaloisInvariant, function(tab, bch)
   return ForAll(PrimeResidues(N), j-> GaloisCyc(bch, j) in Irr(tab));
 end);
 
+
+##  <#GAPDoc Label="FrobeniusCharacterValues">
+##  <ManSection>
+##  <Heading>Frobenius character values</Heading>
+##  <Func Name="SmallestDegreeFrobeniusCharacterValue" Arg="cyc, p"/>
+##  <Returns>a positive integer or <K>fail</K></Returns>
+##  <Func Name="StandardFrobeniusCharacterValue" Arg="cyc, F"/>
+##  <Returns>an element of <A>F</A> or <K>fail</K></Returns>
+##  <Description>
+##  The argument <A>cyc</A> must be a cyclotomic whose conductor and 
+##  denominator are not  divisible by the prime integer <A>p</A> or 
+##  the characteristic of the standard finite field <A>F</A>. 
+##  <P/>
+##  The order of the multiplicative group of <A>F</A> must be divisible
+##  by the conductor of <A>cyc</A>. 
+##  <P/>
+##  Then <Ref Func="StandardFrobeniusCharacterValue"/> returns the image 
+##  of <A>cyc</A> in <A>F</A> under the homomorphism which maps the
+##  root of unity <C>E(n)</C> to the <Ref Func="StandardCyclicGenerator"/>
+##  of order <C>n</C> in <A>F</A>. If the conditions are not fulfilled 
+##  the function returns <K>fail</K>.
+##  <P/>
+##  The function <Ref Func="SmallestDegreeFrobeniusCharacterValue"/> returns
+##  the smallest degree of a field over the prime field of order <A>p</A> 
+##  containing the image of <A>cyc</A>.
+##  <Example>gap> SmallestDegreeFrobeniusCharacterValue(E(13), 19);
+##  12
+##  gap> F := FF(19,12);
+##  FF(19, 12)
+##  gap> x := StandardFrobeniusCharacterValue(E(13),F);;
+##  gap> x^13;
+##  !Z(19)^0
+##  gap> x = StandardCyclicGenerator(F, 13);
+##  true
+##  gap> cc := (E(13)+1/3)^4;;
+##  gap> xx := StandardFrobeniusCharacterValue(cc, F);;
+##  gap> xx = StandardFrobeniusCharacterValue(E(13)+1/3, F)^4;
+##  true
+##  </Example>
+##  </Description>
+##  </ManSection>
+##  <#/GAPDoc>
+# reverse direction: Frobenius character values
+InstallGlobalFunction(SmallestDegreeFrobeniusCharacterValue, function(cyc, p)
+  local N, c;
+  N := Conductor(cyc);
+  c := CoeffsCyc(cyc, N);
+  if N mod p = 0 then
+    return fail;
+  fi;
+  return OrderMod(p, N);
+end);
+InstallGlobalFunction(StandardFrobeniusCharacterValue, function(cyc, F)
+  local p, N, c, x, res, o, j;
+  p := Characteristic(F);
+  N := Conductor(cyc);
+  c := CoeffsCyc(cyc, N);
+  if N mod p = 0 then
+    return fail;
+  fi;
+  if (Size(F)-1) mod N <> 0 then
+    return fail;
+  fi;
+  # image of E(N)
+  x := StandardCyclicGenerator(F, N);
+  res := Zero(F);
+  o := Z(p)^0;
+  for j in [N, N-1..1] do
+    res := res * x + c[j]*o;
+  od;
+  return res;
+end);
+  
 

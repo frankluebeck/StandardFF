@@ -65,6 +65,17 @@ The following function translates between these two lifts.
 
 <#Include Label="StandardValuesBrauerCharacter">
 
+The inverse of a lift is used to reduce character values in characteristic
+<M>0</M>  modulo  a   prime  <M>p</M>.  Choosing  a   lift  is  equivalent
+to  choosing  a  <M>p</M>-modular  system. &GAP;  has  the  function  <Ref
+BookName="Reference" Attr="FrobeniusCharacterValue"/>  which computes this
+reduction with respect to the lift defined by Conway polynomials.
+<P/>
+Here is the corresponding function with respect to the lift constructed in
+this package.
+
+<#Include Label="FrobeniusCharacterValues">
+
 </Section>
 
 <Section Label="sec:FactorData">
