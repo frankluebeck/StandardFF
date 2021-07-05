@@ -378,6 +378,10 @@ SFFHelper.rPowerStandardFFTrace := function(p, r, k)
       od;
       # compute minimal polynomial of cc over L, will have coefficients
       # in degree m subfield K of L
+      # [Remark: here we compute the minimal polynomial of the vector of 1
+      # Starting with a random vector needs one more multiplication,
+      # but we can take random r columns (corresp. to r elements of the
+      # K-basis to compute the minimal polynomial.
       vec := 0*cc;
       vec[1] := a^0;
       st := FindLinearCombination(vec, false);
