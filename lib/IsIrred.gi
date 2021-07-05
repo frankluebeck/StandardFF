@@ -53,7 +53,7 @@ end);
 
 # for general polynomials, test for divisors of all lower degrees 
 InstallGlobalFunction(IsIrreducibleCoeffList, function(cs, q)
-  local d, v, z, o, vq, mat, vv, i;
+  local d, v, z, o, vq, mat, vv, i, m;
   d := Length(cs)-1;
   if IsPrimeInt(d) and q < 5 then
     return IsIrreducibleCoeffListPrimeDegree(cs, q);
@@ -79,7 +79,10 @@ InstallGlobalFunction(IsIrreducibleCoeffList, function(cs, q)
   Add(mat, vq);
   for i in [2..d-1] do
     vv := ProductCoeffs(mat[i], vq);
-    ReduceCoeffs(vv, cs);
+    m := ReduceCoeffs(vv, cs);
+    if Length(vv) > m then
+      vv := vv{[1..m]};
+    fi;
     Add(mat, vv);
   od;
   for vv in mat do
