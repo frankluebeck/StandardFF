@@ -586,6 +586,15 @@ end;
 ##  <C>x</C><Emph>r</Emph><C>_</C><Emph>k</Emph>  and   the  coefficients  can
 ##  contain  variables <C>x</C><Emph>r</Emph><C>_</C><Emph>l</Emph>  with <M>l
 ##  &lt; k</M>.
+##  <P/>
+##  REMARK:  Note that  in this  version of  the <Package>StandardFF</Package>
+##  package  the  fields returned  by  <Ref  Func="FF"/>  are not  cached  (in
+##  contrast  to the  &GAP; function  <Ref BookName="Reference"  Func="GF"/>).
+##  Furthermore, currently the package  only supports arithmetic operations of
+##  elements in the same field (and  the prime field, for convenience). To add
+##  or  multiply elements  in  different  extensions of  the  prime field  use
+##  explicit embeddings (see <Ref  Meth="Embedding" Label="for standard finite
+##  fields"/>).
 ##  <Example>gap> Fp := FF(2, 1);
 ##  GF(2)
 ##  gap> F := FF(2, 100);
