@@ -52,7 +52,7 @@ FFTower(17;2,2,3)
 gap> a := PrimitiveElement(F);; a := a^11-3*a^5+a;
 x12^11+Z(17)^9*x12^5+x12
 gap> t := ToTowerElement(F, a);
-<FFTower(17;2,2,3):[ 12, 10, 3, 0, 14, 12, 6, 4, 3, 11, 6, 6 ]>
+<FFTower(17;2,2,3):[ 0, 0, 10, 16, 0, 0, 3, 15, 0, 0, 16, 9 ]>
 gap> a^12345 = FromTowerElement(F, t^12345);
 true
 gap> v := AsVector(a);
@@ -65,17 +65,17 @@ gap> pol := AsPolynomial(a);;
 gap> ElementPolynomial(F, pol^10) = a^10;
 true
 gap> nr := SteinitzNumber(a);
-219054539551015
+340709196750181
 gap> a = ElementSteinitzNumber(F, nr);
 true
 gap> rgens := GeneratorsOfField(T); # generators of prime degree steps
 [ <FFTower(17;2,2,3):[ 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]>, 
   <FFTower(17;2,2,3):[ 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]>, 
   <FFTower(17;2,2,3):[ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 ]> ]
-gap> FromTowerElement(F, rgens[2]+rgens[3]) = PrimitiveElement(F);
+gap> FromTowerElement(F, rgens[2]*rgens[3]) = PrimitiveElement(F);
 true
 gap> ## primitive element of FF(17, 6)
-gap> y := FromTowerElement(F, rgens[1] + rgens[3]);;
+gap> y := FromTowerElement(F, rgens[1] * rgens[3]);;
 gap> x6 := Indeterminate(FF(17,1), "x6");;
 gap> MinimalPolynomial(FF(17,1), y, x6) = DefiningPolynomial(FF(17,6));
 true
@@ -84,15 +84,15 @@ FF(7, 360)
 gap> T := Tower(F);
 FFTower(7;2,2,2,3,3,5)
 gap> rgen := GeneratorsOfField(T);;
-gap> t := rgen[2] + rgen[4];; # prim. elt of FF(7,12)
+gap> t := rgen[2] * rgen[4];; # prim. elt of FF(7,12)
 gap> SteinitzPair(t);
-[ 12, 2450 ]
+[ 12, 117649 ]
 gap> a := FromTowerElement(F, t);;
 gap> H := FF(7, 12);
 FF(7, 12)
-gap> ElementSteinitzNumber(H, 2450);
+gap> ElementSteinitzNumber(H, 117649);
 x12
-gap> b := ElementSteinitzNumber(H, 2450);
+gap> b := ElementSteinitzNumber(H, 117649);
 x12
 gap> Value(MinimalPolynomial(FF(7,1), a), b);
 !0*Z(7)
@@ -112,11 +112,11 @@ x45^5
 gap> PreImageElm(emb, PrimitiveElement(F));
 fail
 gap> SteinitzNumber(y);
-40353950
-gap> SteinitzNumber(x);
-7031676478883553279994550741476882515263983384454437831737602
+13841287201
+gap> SteinitzNumber(x) mod 10^50;
+72890819326613454654477690085519113574118965817601
 gap> SteinitzPair(x);
-[ 45, 40353950 ]
+[ 45, 13841287201 ]
 
 # more examples 
 gap> IsStandardPrimeField(GF(47));
