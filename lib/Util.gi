@@ -179,6 +179,105 @@ function(F, a, var)
                     IndeterminateNumberOfUnivariateRationalFunction(var));
 end);
 
+##  <#GAPDoc Label="BerlekampMassey">
+##  <ManSection>
+##  <Func Name="BerlekampMassey" Arg="u" />
+##  <Returns>a list of field elements</Returns>
+##  <Description>
+##  The argument <A>u</A> is a list of elements in a field <M>F</M>.
+##  This function implements the Berlekamp-Massey algorithm which returns
+##  the shortest sequence <M>c</M> of elements in <M>F</M> such that for each
+##  <M>i > l</M>, the length of <M>c</M>, we have <M>u[i] = \sum_{{j=1}}^l 
+##  <A>u</A>[i-j] c[j]</M>.
+##  <Example>gap> x := Indeterminate(GF(23), "x");;
+##  gap> f := x^5 + Z(23)^16*x + Z(23)^12;;
+##  gap> u := List([1..50], i-> Value(x^i mod f, 0));;
+##  gap> c := BerlekampMassey(u);;
+##  gap> ForAll([6..50], i-> u[i] = Sum([1..5], j-> u[i-j]*c[j]));
+##  true
+##  gap> -c;
+##  [ 0*Z(23), 0*Z(23), 0*Z(23), Z(23)^16, Z(23)^12 ]
+##  </Example>
+##  </Description>
+##  </ManSection>
+##  
+##  <ManSection>
+##  <Func Name="MinimalPolynomialByBerlekampMassey" Arg="x" />
+##  <Returns>the minimal polynomial of <A>x</A></Returns>
+##  <Description>
+##  Here <M>x</M> must be an element of an algebraic extension field <M>F/K</M>.
+##  (<M>K</M> must be the <Ref BookName="Reference" Attr="LeftActingDomain" />
+##  of <M>F</M>). 
+##  This function computes the minimal polynomial of <A>x</A> over <M>K</M> by
+##  applying the Berlekamp-Massey algorithm to the list of traces of <M><A>x</A>^i</M>.
+##  <Example>gap> x := Indeterminate(GF(23), "x");;
+##  gap> f := x^5 + Z(23)^16*x + Z(23)^12;;
+##  gap> F := AlgebraicExtension(GF(23), f);;
+##  gap> mp := MinimalPolynomialByBerlekampMassey(PrimitiveElement(F));;
+##  gap> Value(mp, x) = f;
+##  true
+##  </Example>
+##  </Description>
+##  </ManSection>
+##  <#/GAPDoc>
+InstallGlobalFunction(BerlekampMassey, function(u)
+  local N, l, a, r, t, b, z, dd, d, c, a1, m, n, k;
+  N := Length(u);
+  l := 0;
+  a := [];
+  r := -1;
+  t := 0;
+  b := [];
+  z := Zero(u[1]);
+  dd := One(u[1]);
+  for n in [0..N-1] do
+    d := u[n+1];
+    for k in [1..l] do
+      d := d-a[k]*u[n-k+1];
+    od;
+    if not IsZero(d) then
+      c := d*dd^-1;
+      a1 := a - c*Concatenation(z*[1..n-r],b);
+      a1[n-r] := a1[n-r] + c;
+      if 2*l <= n then
+        m := n+1-l;
+        t := l;
+        l := m;
+        b := a;
+        r := n;
+        dd := d;
+      fi;
+      a := a1;
+    fi;
+  od;
+  return a;
+end);
+
+InstallGlobalFunction(MinimalPolynomialByBerlekampMassey,  function(x)
+  local cl, F, K, n, y, l, res, i;
+  cl := function(y)
+    res := y![1];
+    if not IsList(res) then
+      res := [res];
+    fi;
+    return res;
+  end;
+  F := DefaultField(x);
+  K := LeftActingDomain(F);
+  n := Degree(DefiningPolynomial(F));
+  y := x^0;
+  l := [cl(y)[1]];
+  for i in [1..2*n-1] do
+    y := y*x;
+    Add(l, cl(y)[1]);
+
+  od;
+  res := -Reversed(BerlekampMassey(l));
+  ConvertToVectorRep(res);
+  Add(res, One(res[1]));
+  return UnivariatePolynomial(K,res,1);
+end);
+
 # with multiplicative upper bound
 # (this is sufficient in this context, 'OrderMod' would try lengthy
 # or impossible integer factorizations for larger parameters)

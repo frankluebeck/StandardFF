@@ -18,6 +18,9 @@ DeclareGlobalFunction("FindConjugateZeroes");
 DeclareGlobalFunction("FindConjugateZeroesChar2");
 DeclareGlobalFunction("ZeroesConway");
 
+DeclareGlobalFunction("BerlekampMassey");
+DeclareGlobalFunction("MinimalPolynomialByBerlekampMassey");
+
 DeclareGlobalFunction("FetchMoreFactors");
 
 DeclareGlobalFunction("StandardValuesBrauerCharacter");

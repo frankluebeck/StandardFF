@@ -33,6 +33,13 @@
 
 </Section>
 
+<Section Label="sec:BM">
+<Heading>Minimal polynomials of sequences</Heading>
+
+<#Include Label="BerlekampMassey">
+
+</Section>
+
 <Section Label="sec:BrauerChar">
 <Heading>Brauer characters with respect to different lifts</Heading>
 
