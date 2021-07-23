@@ -221,23 +221,27 @@ end);
 ##  </ManSection>
 ##  <#/GAPDoc>
 InstallGlobalFunction(BerlekampMassey, function(u)
-  local N, l, a, r, t, b, z, dd, d, c, a1, m, n, k;
+  local N, l, a, r, t, b, z, ur, dd, d, c, a1, m, n;
   N := Length(u);
   l := 0;
   a := [];
   r := -1;
   t := 0;
   b := [];
-  z := Zero(u[1]);
+  z := 0*u;
+  ur := Reversed(u);
   dd := One(u[1]);
   for n in [0..N-1] do
     d := u[n+1];
-    for k in [1..l] do
-      d := d-a[k]*u[n-k+1];
-    od;
+##      for k in [1..l] do
+##        d := d-a[k]*u[n-k+1];
+##      od;
+    if l > 0 then
+      d := d - a * ur{[N+1-n..N+l-n]};
+    fi;
     if not IsZero(d) then
       c := d*dd^-1;
-      a1 := a - c*Concatenation(z*[1..n-r],b);
+      a1 := a - Concatenation(z{[1..n-r]},c*b);
       a1[n-r] := a1[n-r] + c;
       if 2*l <= n then
         m := n+1-l;
@@ -270,7 +274,6 @@ InstallGlobalFunction(MinimalPolynomialByBerlekampMassey,  function(x)
   for i in [1..2*n-1] do
     y := y*x;
     Add(l, cl(y)[1]);
-
   od;
   res := -Reversed(BerlekampMassey(l));
   ConvertToVectorRep(res);

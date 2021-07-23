@@ -1105,12 +1105,12 @@ InstallGlobalFunction(StdMon, function(n)
 end);
 
 # just the degrees
-smd := function(n)
+StdMonDegs := function(n)
   local f, a, res, new, i;
   if n = 1 then return [1]; fi;
   f := Collected(Factors(n));
   a := f[Length(f)];
-  res := smd(n/a[1]);
+  res := StdMonDegs(n/a[1]);
   new := List(res, l-> LcmInt(l, a[1]^a[2]));
   for i in [1..a[1]-1] do
     Append(res, new);
