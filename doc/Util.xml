@@ -36,6 +36,8 @@
 <Section Label="sec:BM">
 <Heading>Minimal polynomials of sequences</Heading>
 
+<#Include Label="InvModCoeffs">
+
 <#Include Label="BerlekampMassey">
 
 </Section>

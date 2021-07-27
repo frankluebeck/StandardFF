@@ -6,6 +6,69 @@
 ##  
 
 
+##  <#GAPDoc Label="InvModCoeffs">
+##  <ManSection>
+##  <Oper Name="InvModCoeffs" Arg="fcoeffs, gcoeffs" />
+##  <Returns>a list of <K>fail</K></Returns>
+##  <Description>
+##  The arguments <A>fcoeffs</A> and <A>gcoeffs</A>  are coeffient list of two
+##  polynomials <M>f</M> and <M>g</M>.
+##  This operation returns  the coefficient list of  the inverse <M>f^{-1}</M>
+##  modulo  <M>g</M>, if  <M>f</M> and  <M>g</M> are  coprime, and <K>fail</K>
+##  otherwise.
+##  <P/>
+##  The  default  method  computes  the  inverse  by  the  extended  Euclidean
+##  algorithm.
+##  <Example>gap> f := Z(13)^0*[ 1, 10, 1, 11, 0, 1 ];;
+##  gap> g := Z(13)^0*[ 5, 12, 5, 12, 2, 0, 2 ];;
+##  gap> InvModCoeffs(f, g);
+##  fail
+##  gap> GcdCoeffs(f, g);
+##  [ Z(13)^0, 0*Z(13), Z(13)^0 ]
+##  gap> f[1]:=f[1]+1;;
+##  gap> finv := InvModCoeffs(f, g);
+##  [ Z(13)^9, Z(13)^10, Z(13)^10, Z(13)^8, Z(13)^5, Z(13)^6 ]
+##  gap> pr := ProductCoeffs(finv, f);;
+##  gap> ReduceCoeffs(pr, g);; ShrinkRowVector(pr);; pr;
+##  [ Z(13)^0 ]
+##  </Example>
+##  </Description>
+##  </ManSection>
+##  <#/GAPDoc>
+# f^-1 mod g
+InstallMethod(InvModCoeffs, [IsList, IsList], function(f, g)
+  local rf, z, rg, t, h, rh, i;
+  rf:=[One(g[1])];
+  z:=Zero(g[1]);
+  rg:=[];
+  while g<>[] do
+    t:=QuotRemPolList(f,g);
+    h:=g;
+    rh:=rg;
+    g:=t[2];
+    if Length(t[1])=0 then
+      rg:=[];
+    else
+      rg:=ShallowCopy(-ProductCoeffs(t[1],rg));
+    fi;
+    for i in [1..Length(rf)] do
+      if IsBound(rg[i]) then
+        rg[i]:=rg[i]+rf[i];
+      else
+        rg[i]:=rf[i];
+      fi;
+    od;
+    f:=h;
+    rf:=rh;
+    ShrinkRowVector(g);
+  od;
+  if Length(f) <> 1 then
+    return fail;
+  else
+    return 1/f[1]*rf;
+  fi;
+end);
+
 ##  <#GAPDoc Label="SimpleRandomRange">
 ##  <ManSection>
 ##  <Func Name="SimpleRandomRange" Arg="max, seed" />
@@ -184,10 +247,10 @@ end);
 ##  <Func Name="BerlekampMassey" Arg="u" />
 ##  <Returns>a list of field elements</Returns>
 ##  <Description>
-##  The argument <A>u</A> is a list of elements in a field <M>F</M>.
-##  This function implements the Berlekamp-Massey algorithm which returns
-##  the shortest sequence <M>c</M> of elements in <M>F</M> such that for each
-##  <M>i > l</M>, the length of <M>c</M>, we have <M>u[i] = \sum_{{j=1}}^l 
+##  The argument  <A>u</A> is  a list  of elements in  a field  <M>F</M>. This
+##  function  implements  the  Berlekamp-Massey algorithm  which  returns  the
+##  shortest sequence <M>c</M> of elements in <M>F</M> such that for each <M>i
+##  >  l</M>,  the  length  of  <M>c</M>, we  have  <M>u[i]  =  \sum_{{j=1}}^l
 ##  <A>u</A>[i-j] c[j]</M>.
 ##  <Example>gap> x := Indeterminate(GF(23), "x");;
 ##  gap> f := x^5 + Z(23)^16*x + Z(23)^12;;
@@ -203,18 +266,23 @@ end);
 ##  
 ##  <ManSection>
 ##  <Func Name="MinimalPolynomialByBerlekampMassey" Arg="x" />
+##  <Func Name="MinimalPolynomialByBerlekampMasseyShoup" Arg="x" />
 ##  <Returns>the minimal polynomial of <A>x</A></Returns>
 ##  <Description>
-##  Here <M>x</M> must be an element of an algebraic extension field <M>F/K</M>.
-##  (<M>K</M> must be the <Ref BookName="Reference" Attr="LeftActingDomain" />
-##  of <M>F</M>). 
-##  This function computes the minimal polynomial of <A>x</A> over <M>K</M> by
-##  applying the Berlekamp-Massey algorithm to the list of traces of <M><A>x</A>^i</M>.
+##  Here   <M>x</M>   must  be   an   element   of  an   algebraic   extension
+##  field  <M>F/K</M>.   (<M>K</M>  must  be  the   <Ref  BookName="Reference"
+##  Attr="LeftActingDomain"  />  of  <M>F</M>).  This  function  computes  the
+##  minimal   polynomial   of  <A>x</A>   over   <M>K</M>   by  applying   the
+##  Berlekamp-Massey algorithm to the list of traces of <M><A>x</A>^i</M>.
+##  <P/>
+##  The second variant uses the algorithm by Shoup in <Cite Key="ShoupMiPo"/>.
 ##  <Example>gap> x := Indeterminate(GF(23), "x");;
 ##  gap> f := x^5 + Z(23)^16*x + Z(23)^12;;
 ##  gap> F := AlgebraicExtension(GF(23), f);;
 ##  gap> mp := MinimalPolynomialByBerlekampMassey(PrimitiveElement(F));;
 ##  gap> Value(mp, x) = f;
+##  true
+##  gap> mp = MinimalPolynomialByBerlekampMasseyShoup(PrimitiveElement(F));
 ##  true
 ##  </Example>
 ##  </Description>
@@ -274,6 +342,150 @@ InstallGlobalFunction(MinimalPolynomialByBerlekampMassey,  function(x)
   for i in [1..2*n-1] do
     y := y*x;
     Add(l, cl(y)[1]);
+  od;
+  res := -Reversed(BerlekampMassey(l));
+  ConvertToVectorRep(res);
+  Add(res, One(res[1]));
+  return UnivariatePolynomial(K,res,1);
+end);
+
+# more efficient and more complicated version by Shoup
+# first a utility function for transposed multiplication
+# tau is field element, v vector, returns tau \circ v
+# see [Shoup, Efficient Computation of Minimal Polynomials, Sec. 3]
+BindGlobal("TransposedMult", function(tau, v)
+  local fam, f, n, b, ft, xx, h, bt, t1, t2, t3, res, zv;
+  fam := FamilyObj(tau);
+  f := fam!.polCoeffs;
+  n := Length(f)-1;
+  b := tau![1];
+  if not IsList(b) then
+    b := [b];
+  fi;
+  while Length(b) < n do
+    Add(b, Zero(fam));
+  od;
+  bt := Reversed(b);
+  zv := Zero(f{[1]});
+  ft := Reversed(f);
+  if IsBound(fam!.ftinv) then
+    h := fam!.ftinv;
+  else
+    xx := 0*ShallowCopy(ft);
+    Remove(xx);
+    xx[n] := One(f[1]);
+    h := InvModCoeffs(ft, xx);
+    ConvertToVectorRep(h);
+    fam!.ftinv := h;
+  fi;
+  t1 := ProductCoeffs(ft, v);
+  t1 := t1{[n+1..Length(t1)]};
+  t2 := ProductCoeffs(bt, v);
+  t2 := t2{[n..Length(t2)]};
+  t3 := ProductCoeffs(h,bt);
+  if Length(t3) > n-1 then
+    t3 := t3{[1..n-1]};
+  fi;
+  t3 := ProductCoeffs(t3, t1);
+  if Length(t3) > n-1 then
+    t3 := t3{[1..n-1]};
+  fi;
+  t3 := Concatenation(zv, t3);
+  res := t2 - t3;
+  ConvertToVectorRep(res);
+  return res;
+end);
+
+# this is like TransposedMult(tau, v) but with some precomputed
+# data (good, when called multiple times with the same tau):
+#    ft : coeffs of reversed (deg n) defining polynomial of extension
+#         containig tau
+#    bt : coeffs of reversed (deg n-1) of tau
+#    hbt : coeffs of h * bt mod X^{n-1}, where h is inverse of
+#          ft mod X^{n-1}
+BindGlobal("TransposedMultCoeffsPre", function(v, ft, bt, hbt)
+  local n, zv, t1, t2, t3, res;
+  n := Length(ft)-1;
+  zv := Zero(ft{[1]});
+  t1 := ProductCoeffs(ft, v);
+  t1 := t1{[n+1..Length(t1)]};
+  t2 := ProductCoeffs(bt, v);
+  t2 := t2{[n..Length(t2)]};
+  t3 := ProductCoeffs(hbt, t1);
+  if Length(t3) > n-1 then
+    t3 := t3{[1..n-1]};
+  fi;
+  t3 := Concatenation(zv, t3);
+  res := t2 - t3;
+  ConvertToVectorRep(res);
+  return res;
+end);
+
+# simple version for field extensions of
+# [Shoup, Efficient Computation of Minimal Polynomials, Sec. 4]
+InstallGlobalFunction(MinimalPolynomialByBerlekampMasseyShoup, function(x)
+  local cl, F, K, n, k, yy, z, bt, ft, fam, h, xx, hbt, v, l, res, i, j;
+  # field element as coefficient list
+  cl := function(y)
+    local res;
+    res := y![1];
+    if not IsList(res) then
+      res := [res];
+    fi;
+    return res;
+  end;
+  F := DefaultField(x);
+  K := LeftActingDomain(F);
+  n := Degree(DefiningPolynomial(F));
+
+  # to be tuned: number of precomputed powers of x
+  k := 2*RootInt(n,2);
+  yy := [x^0, x];
+  for i in [2..k] do
+    Add(yy, yy[i]*x);
+  od;
+  for i in [1..k+1] do
+    yy[i] := cl(yy[i]);
+  od;
+
+  # x^k is needed for transposed multiplication
+  # precomputation:
+  z := Zero(K);
+  while Length(yy[k+1]) < n do
+    Add(yy[k+1], z);
+  od;
+  bt := Reversed(yy[k+1]);
+  ft := Reversed(CoefficientsOfUnivariatePolynomial(DefiningPolynomial(F)));
+  # we cache inverse of ft modulp X^{n-1}
+  fam := FamilyObj(x);
+  if IsBound(fam!.ftinv) then
+    h := fam!.ftinv;
+  else
+    xx := 0*ShallowCopy(ft);
+    Remove(xx);
+    xx[n] := One(K);
+    h := InvModCoeffs(ft, xx);
+    ConvertToVectorRep(h);
+    fam!.ftinv := h;
+  fi;
+  # h * bt mod X^{n-1}
+  hbt := ProductCoeffs(h,bt);
+  if Length(hbt) > n-1 then
+    hbt := hbt{[1..n-1]};
+  fi;
+
+  # now we can compute efficiently the absolute coeffs of
+  # x^i for i = 0 .. 2n-1
+  v := ShallowCopy(cl(x){[1]});
+  v[1] := One(K);
+  l := [];
+  while Length(l) < 2*n do
+    for j in [1..k] do
+      Add(l, yy[j]*v);
+    od;
+    if Length(l) < 2*n then
+      v := TransposedMultCoeffsPre(v, ft, bt, hbt);
+    fi;
   od;
   res := -Reversed(BerlekampMassey(l));
   ConvertToVectorRep(res);

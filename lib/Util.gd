@@ -11,6 +11,8 @@ DeclareGlobalFunction("FindLinearCombination");
 
 DeclareGlobalFunction("OrderModBound");
 
+DeclareOperation("InvModCoeffs", [IsList, IsList]);
+
 DeclareGlobalFunction("DLogShanks");
 DeclareGlobalFunction("DLog");
 
@@ -20,6 +22,7 @@ DeclareGlobalFunction("ZeroesConway");
 
 DeclareGlobalFunction("BerlekampMassey");
 DeclareGlobalFunction("MinimalPolynomialByBerlekampMassey");
+DeclareGlobalFunction("MinimalPolynomialByBerlekampMasseyShoup");
 
 DeclareGlobalFunction("FetchMoreFactors");
 

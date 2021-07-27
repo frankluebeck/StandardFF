@@ -27,3 +27,20 @@
   <note><URL>https://libntl.org/</URL></note>
 </misc></entry>
 
+<entry id="ShoupMiPo"><inproceedings>
+  <author>
+    <name><first>Victor</first><last>Shoup</last></name>
+  </author>
+  <title>Efficient computation of minimal polynomials in algebraic
+              extensions of finite fields</title>
+  <booktitle>Proceedings of the 1999 <C>I</C>nternational <C>S</C>ymposium on
+  <C>S</C>ymbolic and <C>A</C>lgebraic <C>C</C>omputation (<C>V</C>ancouver,
+      <C>BC</C>)</booktitle>
+  <year>1999</year>
+  <pages>53--58</pages>
+  <publisher>ACM, New York</publisher>
+  <mrnumber>1802067</mrnumber>
+  <mrclass>12E20 (68W30)</mrclass>
+  <url>https://doi.org/10.1145/309831.309859</url>
+  <other type="doi">10.1145/309831.309859</other>
+</inproceedings></entry>
