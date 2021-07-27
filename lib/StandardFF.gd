@@ -11,6 +11,7 @@
 DeclareGlobalFunction("StandardPrimeDegreePolynomial");
 DeclareGlobalFunction("StandardFiniteFieldTower");
 # standard finite fields as simple extensions over prime field GF(p)
+DeclareGlobalFunction("StandardFiniteFieldNonSparse");
 DeclareGlobalFunction("StandardFiniteField");
 DeclareSynonym("FF", StandardFiniteField);
 
@@ -35,9 +36,11 @@ DeclareAttribute("AsPolynomial", IsStandardFiniteFieldElement);
 DeclareOperation("ElementVector", [IsStandardFiniteField, IsRowVector]);
 DeclareOperation("ElementPolynomial", [IsStandardFiniteField, IsPolynomial]);
 
-# a record for helper functions
+# records for helper functions
 SFFHelper := rec();
 MakeReadOnlyGlobal("SFFHelper");
+TowerMon := rec();
+MakeReadOnlyGlobal("TowerMon");
 
 # embeddings
 DeclareGlobalFunction("StdMon");

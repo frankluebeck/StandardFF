@@ -733,8 +733,128 @@ SFFHelper.MinimalPolynomialCACHE := function(Fp, xmat, iv)
 end;
 
 
+# some utilities for monomials of tower basis
+TowerMon.MonomialsTowerBasis := function(T)
+  local K, v, prev, l, li, i;
+  K := BaseFiniteFieldTower(T);
+  v := Indeterminate(K, T!.var);
+  prev := PreviousFiniteFieldTower(T);
+  if not IsFiniteFieldTower(prev) then
+    l := [v^0, v];
+    for i in [2..T!.deg-1] do
+      Add(l, l[i]*v);
+    od;
+    return l;
+  fi;
+  li := TowerMon.MonomialsTowerBasis(prev);
+  l := ShallowCopy(li);
+  for i in [1..T!.deg-1] do
+    li := v*li;
+    Append(l, li);
+  od;
+  return l;
+end;
+TowerMon.PolysTower := function(T)
+  if not IsFiniteFieldTower(T) then
+    return [];
+  fi;
+  return Concatenation([T!.poly], 
+                        TowerMon.PolysTower(PreviousFiniteFieldTower(T)));
+end;
+TowerMon.VarsTower := function(T)
+  if not IsFiniteFieldTower(T) then
+    return [];
+  fi;
+  return Concatenation([T!.var], 
+                        TowerMon.VarsTower(PreviousFiniteFieldTower(T)));
+end;
+TowerMon.MonOrdTower := function(T)
+  return CallFuncList(MonomialLexOrdering, TowerMon.VarsTower(T));
+end;
+TowerMon.DegsTower := function(T)
+  local prev, d;
+  prev := PreviousFiniteFieldTower(T);
+  if not IsFiniteFieldTower(prev) then
+    return [1];
+  fi;
+  d := TowerMon.DegsTower(prev);
+  return Concatenation([d[1]*prev!.deg], d);
+end;
+
+TowerMon.SparseActionPrimEltTowerBasis := function(T)
+  local xp, mtb, emtb, polys, monord, o, degs, res, c, ec, poss, coeffs, i, b;
+  xp := PolynomialFiniteFieldTowerElement(PrimitiveElement(T));
+  mtb := TowerMon.MonomialsTowerBasis(T);
+  emtb := List(mtb, b-> ExtRepPolynomialRatFun(b)[1]);
+  polys := TowerMon.PolysTower(T);
+  monord := TowerMon.MonOrdTower(T);
+  o := One(BaseFiniteFieldTower(T));
+  degs := TowerMon.DegsTower(T);
+  res := [];
+  for b in mtb do
+    c := PolynomialReducedRemainder(xp*b, polys, monord);
+    ec := ExtRepPolynomialRatFun(c);
+    poss := [];
+    coeffs := [];
+    i := 1;
+    for i in [1..Length(ec)/2] do
+      Add(poss, Position(emtb, ec[2*i-1]));
+      Add(coeffs, ec[2*i]);
+    od;
+    Add(res, [poss, coeffs]);
+  od;
+  return res;
+end;
+TowerMon.MultVecSparse := function(v, sp)
+  local res, c, a, a1, i;
+  res := 0*ShallowCopy(v);
+  for i in [1..Length(v)] do
+    c := v[i];
+    if not IsZero(c) then
+      a := sp[i];
+      a1 := a[1];
+      if Length(a1) = 1 then
+        res[a1[1]] := res[a1[1]] + c*a[2][1];
+      else
+        res{a[1]} := res{a[1]} + c*a[2];
+      fi;
+    fi;
+  od;
+  return res;
+end;
+# the main function, which uses all the others:
+# - computes sparse action of primitive element x of tower on
+#   tower basis
+# - its minimal polynomial via Berlekamp-Massey
+# - returns [matrix of x-powers on tower basis, minimal polynomial]
+TowerMon.MinPolPrimEltTower := function(T, vnr)
+  local sp, len, K, z, o, v, xp, u, res, i;
+  sp := TowerMon.SparseActionPrimEltTowerBasis(T);
+  len := Length(sp);
+  K := BaseFiniteFieldTower(T);
+  z := Zero(K);
+  o := One(K);
+  v := z*[1..len];
+  v[1] := o;
+  xp := [v];
+  u := [v[1]];
+  for i in [2..2*len] do
+    v := TowerMon.MultVecSparse(v, sp);
+    Add(u, v[1]);
+    if Length(xp) < len then
+      Add(xp, v);
+    fi;
+  od;
+  res := -Reversed(BerlekampMassey(u));
+  Add(res, o);
+  ConvertToVectorRep(res);
+  ConvertToMatrixRep(xp, K);
+  return [xp, UnivariatePolynomial(K,res,vnr)];
+end;
+
+
 # standard finite field as simple extension over GF(p)
-InstallGlobalFunction(StandardFiniteField, function(p, n)
+InstallGlobalFunction(StandardFiniteFieldNonSparse, function(p, n)
   local Fp, K, x, vnam, v, iv, xmat, mp, xp, Kp, i, fam;
   if n=1 then 
     Kp := GF(p);
@@ -762,6 +882,41 @@ InstallGlobalFunction(StandardFiniteField, function(p, n)
   Setter(Tower)(Kp, K);
   Setter(IsStandardFiniteField)(Kp, true);
   Setter(PrimitivePowersInTowerBasis)(Kp, xp);
+  # let elements know to be in standard field
+  fam := FamilyObj(RootOfDefiningPolynomial(Kp));
+  fam!.extType := Subtype(fam!.extType, IsStandardFiniteFieldElement);
+  fam!.baseType := Subtype(fam!.baseType, IsStandardFiniteFieldElement);
+  SetFilterObj(OneImmutable(Kp), IsStandardFiniteFieldElement);
+  SetFilterObj(ZeroImmutable(Kp), IsStandardFiniteFieldElement);
+  SetFilterObj(RootOfDefiningPolynomial(Kp), IsStandardFiniteFieldElement);
+
+  return Kp;
+end);
+# faster version using sparse action of primitive element on tower basis
+# and Berlekamp-Massey for minimal polynomial
+InstallGlobalFunction(StandardFiniteField, function(p, n)
+  local Kp, Fp, K, x, vnam, v, iv, xpmp, fam;
+  if n=1 then 
+    Kp := GF(p);
+    SetIsStandardPrimeField(Kp, true);
+    return Kp; 
+  fi;
+  Fp := FF(p,1);
+  K := StandardFiniteFieldTower(p, n);
+  x := PrimitiveElement(K);
+  vnam := Concatenation("x", String(n));
+  v := Indeterminate(Fp, vnam);
+  iv := IndeterminateNumberOfUnivariateLaurentPolynomial(v);
+  if IsPrimeInt(n) then
+    # nothing to compute
+    xpmp := [IdentityMat(n, Fp), UnivariatePolynomial(Fp, K!.coeffs, iv)];
+  else
+    xpmp := TowerMon.MinPolPrimEltTower(K, iv);
+  fi;
+  Kp := AlgebraicExtensionNC(GF(p), xpmp[2], vnam);
+  Setter(Tower)(Kp, K);
+  Setter(IsStandardFiniteField)(Kp, true);
+  Setter(PrimitivePowersInTowerBasis)(Kp, xpmp[1]);
   # let elements know to be in standard field
   fam := FamilyObj(RootOfDefiningPolynomial(Kp));
   fam!.extType := Subtype(fam!.extType, IsStandardFiniteFieldElement);
