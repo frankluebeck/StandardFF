@@ -437,6 +437,10 @@ InstallGlobalFunction(MinimalPolynomialByBerlekampMasseyShoup, function(x)
   F := DefaultField(x);
   K := LeftActingDomain(F);
   n := Degree(DefiningPolynomial(F));
+  if n=1 then
+    res := [-x, One(K)];
+    return UnivariatePolynomial(K,res,1);
+  fi;
 
   # to be tuned: number of precomputed powers of x
   k := 2*RootInt(n,2);

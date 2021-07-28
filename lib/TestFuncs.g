@@ -197,7 +197,7 @@ AllFieldsWithConwayPolynomial := function(arg...)
           f := FF(p, j);
           x := StandardPrimitiveRoot(f); 
           if "MiPo" in arg then
-            pol := MinimalPolynomial(FF(p,1),x);
+            pol := MinimalPolynomialByBerlekampMasseyShoup(x);
             st :=
               ValuePol(List(CoefficientsOfUnivariatePolynomial(pol),IntFFE),p);
             AppendTo("MiPoPrimitiveRoots", "Add(mp, ", [p,j,st],");\n");
