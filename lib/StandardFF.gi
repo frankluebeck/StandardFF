@@ -895,11 +895,18 @@ end);
 # faster version using sparse action of primitive element on tower basis
 # and Berlekamp-Massey for minimal polynomial
 InstallGlobalFunction(StandardFiniteField, function(p, n)
-  local Kp, Fp, K, x, vnam, v, iv, xpmp, fam;
+  local Kp, cf, Fp, K, x, vnam, v, iv, xpmp, fam;
   if n=1 then 
     Kp := GF(p);
     SetIsStandardPrimeField(Kp, true);
     return Kp; 
+  fi;
+  # use the NonSparse version if large part of n is a prime power
+  if n > 100 then
+    cf := Collected(Factors(n));
+    if ForAny(cf, a-> a[2]>1 and (a[1]^a[2])^2 > n) then
+      return StandardFiniteFieldNonSparse(p, n);
+    fi;
   fi;
   Fp := FF(p,1);
   K := StandardFiniteFieldTower(p, n);
