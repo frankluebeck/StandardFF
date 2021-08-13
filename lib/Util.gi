@@ -652,6 +652,7 @@ InstallGlobalFunction(FindConjugateZeroes, function(K, cpol, qq)
   fac := cpol;
   d := Length(fac)-1;
   while Length(fac) > 2 do
+    Info(InfoStandardFF, 4, "deg(fac) = ",Length(fac)-1, "\n");
     r := 0;
     while IsZero(r) do
       r := [Random(K),One(K)];
@@ -730,6 +731,7 @@ InstallGlobalFunction(ZeroesConway, function(K)
   end;
   # now we split fac
   while len > 2 do
+    Info(InfoStandardFF, 4, "deg(fac) = ",Length(fac)-1, "\n");
     # This is Cantor-Zassenhaus, since the factors of fac over K are linear 
     # it is sufficient to try random polynomials of form X+c, c in K.
     # We compute (X + c) ^ ((p^n-1)/2) mod fac using
@@ -778,6 +780,7 @@ InstallGlobalFunction(FindConjugateZeroesChar2, function(K, cpol, qq)
   d := Length(fac)-1;
   m := DegreeOverPrimeField(K);
   while Length(fac) > 2 do
+    Info(InfoStandardFF, 4, "deg(fac) = ",Length(fac)-1, "\n");
     r := [Random(K), Random(K)];
     rr := r;
     for j in [2..m] do
