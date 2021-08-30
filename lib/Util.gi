@@ -120,6 +120,24 @@ InstallGlobalFunction(SimpleRandomRange, function(max, seed)
   return [QuoInt(max*r, mm), seed];
 end);
 
+BindGlobal("SASCache", [0,0,0]);
+InstallGlobalFunction(StandardAffineShift, function(q, i)
+  local m, a;
+  if q = SASCache[1] then
+    m := SASCache[2];
+    a := SASCache[3];
+  else 
+    if q mod 2 = 0 then
+      m := 3^LogInt(q, 3);
+    else
+      m := 2^Log2Int(q);
+    fi;
+    a := QuoInt(2*q, 3);
+    SASCache{[1..3]} := [q,m,a];
+  fi;
+  return (m*i+a) mod q;
+end);
+
 ##  <#GAPDoc Label="FindLinearCombination">
 ##  <ManSection>
 ##  <Func Name="FindLinearCombination" Arg="v, start"/>

@@ -11,8 +11,8 @@
 # bound: multiple of order of p mod r^k
 # returns standard generator of order r^k in \bar GF(p) as Steinitz pair
 InstallGlobalFunction(StdCycGen, function(p, r, k, bound)
-  local F, cgens, res, l, m, mm, t, K, nr, a, am, pl, b, bb, 
-        aa, aaj, j, z, min, nn, s, seed, e, c;
+  local F, cgens, res, l, m, mm, t, K, count, st, a, am, pl, b, 
+        z, bb, aa, e, c, j, min, nn, s;
   # we cache the results
   F := GF(p);
   if not IsBound(F!.prcycgens) then
@@ -35,16 +35,18 @@ InstallGlobalFunction(StdCycGen, function(p, r, k, bound)
   if t = k then
     # easy case:
     # we search for element whose m-th power has order p^t,
-    # testing pseudo random elements, initial seed 1  
+    # testing pseudo random elements  
     K := StandardFiniteField(p, l);
-    # first entry is random Steinitz number, second is seed for next call
-    seed := SimpleRandomRange(Size(K), 1);
-    a := ElementSteinitzNumber(K, seed[1]);
+    # we use standard affine shift for pseudo random sequence
+    count := 1;
+    st := StandardAffineShift(Size(K), count);
+    a := ElementSteinitzNumber(K, st);
     am := a^m;
     while IsZero(am) or IsOne(am^(r^(t-1))) do
       Info(InfoStandardFF, 2, "!\c");      
-      seed := SimpleRandomRange(Size(K), seed[2]);
-      a := ElementSteinitzNumber(K, seed[1]);
+      count := count+1;
+      st := StandardAffineShift(Size(K), count);
+      a := ElementSteinitzNumber(K, st);
       am := a^m;
     od;
     pl := SteinitzPair(K, am);

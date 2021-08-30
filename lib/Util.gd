@@ -6,6 +6,7 @@
 ##  
 
 DeclareGlobalFunction("SimpleRandomRange");
+DeclareGlobalFunction("StandardAffineShift");
 
 DeclareGlobalFunction("FindLinearCombination");
 

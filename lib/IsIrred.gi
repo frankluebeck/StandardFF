@@ -138,7 +138,7 @@ end);
 # We try to find sparse polynomials. After each d tries we allow 
 # additional non-zero coefficients.
 InstallGlobalFunction(StandardIrreducibleCoeffList, function(K, d, a)
-  local felm, l, q, count, dd, seed, rm, k, inc;
+  local l, q, count, inc, dd, st, k;
   # l is coefficient list, monic and constant coeff a
   l := NullMat(1, d+1, K)[1];
   l[d+1] := One(K);
@@ -152,7 +152,6 @@ InstallGlobalFunction(StandardIrreducibleCoeffList, function(K, d, a)
     inc := inc+1;
   od;
   dd := 1;
-  seed := 1;
   while not IsIrreducibleCoeffList(l, q) do
     # after every d attempts allow inc more non-zero coeffs
     ####if count mod (2*d) = 0 and dd < d then
@@ -163,10 +162,13 @@ InstallGlobalFunction(StandardIrreducibleCoeffList, function(K, d, a)
       fi;
       Info(InfoStandardFF, 2, "(dd=",dd,")\c");
     fi;
+    st := StandardAffineShift(q^(dd-1), count);
+    st := CoefficientsQadic(st, q);
+    while Length(st) < dd-1 do
+      Add(st, 0);
+    od;
     for k in [2..dd] do
-      rm := SimpleRandomRange(Size(K), seed);
-      seed := rm[2];
-      l[k] := ElementSteinitzNumber(K, rm[1]);
+      l[k] := ElementSteinitzNumber(K, st[k-1]);
     od;
     Info(InfoStandardFF, 2, "*\c");
     count := count+1;
@@ -238,7 +240,7 @@ isirrNTL := function(cs, K)
 end;
 
 StandardIrreducibleCoeffListNTL := function(K, d, a)
-  local felm, l, q, count, dd, seed, rm, k, inc;
+  local l, q, count, inc, dd, st, k;
   # l is coefficient list, monic and constant coeff a
   l := NullMat(1, d+1, K)[1];
   l[d+1] := One(K);
@@ -256,7 +258,6 @@ StandardIrreducibleCoeffListNTL := function(K, d, a)
     inc := inc+1;
   od;
   dd := 1;
-  seed := 1;
   while not isirrNTL(l, K) do
     # after every d attempts allow inc more non-zero coeffs
     ####if count mod (2*d) = 0 and dd < d then
@@ -267,10 +268,13 @@ StandardIrreducibleCoeffListNTL := function(K, d, a)
       fi;
       Info(InfoStandardFF, 2, "(dd=",dd,")\c");
     fi;
+    st := StandardAffineShift(q^(dd-1), count);
+    st := CoefficientsQadic(st, q);
+    while Length(st) < dd-1 do
+      Add(st, 0);
+    od;
     for k in [2..dd] do
-      rm := SimpleRandomRange(Size(K), seed);
-      seed := rm[2];
-      l[k] := ElementSteinitzNumber(K, rm[1]);
+      l[k] := ElementSteinitzNumber(K, st[k-1]);
     od;
     Info(InfoStandardFF, 2, "*\c");
     count := count+1;
