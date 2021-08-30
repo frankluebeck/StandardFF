@@ -53,7 +53,7 @@ end);
 
 # for general polynomials, test for divisors of all lower degrees 
 InstallGlobalFunction(IsIrreducibleCoeffList, function(cs, q)
-  local d, v, z, o, vq, mat, vv, i, m;
+  local d, v, z, o, vq, vqq, mat, vv, m, k, i;
   d := Length(cs)-1;
   if IsPrimeInt(d) and q < 5 then
     return IsIrreducibleCoeffListPrimeDegree(cs, q);
@@ -64,15 +64,27 @@ InstallGlobalFunction(IsIrreducibleCoeffList, function(cs, q)
   v[1] := z;
   v[2] := o;
  
-# remark: a precomputation of v^i mod cs for i = d..2d-1 and variants
-# of PowerModCoeffs and ReduceCoeffs which use it could be useful
-##    vq := PowerModCoeffs(v, q, cs);
+  # remark: a precomputation of v^i mod cs for i = d..2d-1 and variants
+  # of PowerModCoeffs and ReduceCoeffs which use it could be useful
+  ##    vq := PowerModCoeffs(v, q, cs);
   vq := PMCspecial(v, q, cs);
   # test for linear factors
   if Length(GcdCoeffs(vq-v, cs)) > 1 then
     Info(InfoStandardFF, 2, 1,"\c");
     return false;
   fi;
+  
+  # for very small q we take a few more q-th powers,
+  # many random polynomials have factors of very small degree
+  vqq := vq;
+  for k in [1..QuoInt(d, 2*Log2Int(q)+2)] do
+    vqq := PowerModCoeffs(vqq, q, cs);
+    if Length(GcdCoeffs(vqq-v, cs)) > 1 then
+      Info(InfoStandardFF, 2, k+1,"'\c");
+      return false;
+    fi;
+  od;
+
   # precompute in rows of mat: 1^q, X^q, (X^2)^q, ... (x^(d-1))^q mod cs
   mat := [0*cs{[1..d]}];
   mat[1][1] := v[2];
@@ -93,9 +105,18 @@ InstallGlobalFunction(IsIrreducibleCoeffList, function(cs, q)
       Add(vv, z);
     od;
   od;
+
+  # Now mat is the Berlekamp matrix, describing the Frobenius
+  # on the X^i-basis.
+  # We could compute the rank of mat - id (first row is zero),
+  # cs is irreducible  iff  the rank is d-1.
+  # But when is this good? The loop below stops for random polynomials
+  # after few vector-matrix multiplications plus gcd.
+
   # now we get further q-powers by matrix multiplication
   # in step i (<=d/2) we check for irreducible factors of degree i
-  for i in [2..QuoInt(d,2)] do
+##    for i in [2..QuoInt(d,2)] do
+  for i in [2..2*Log2Int(d)] do
     vq := vq*mat;
     while Length(vq) > 0 and IsZero(vq[Length(vq)]) do
       Unbind(vq[Length(vq)]);
@@ -105,7 +126,11 @@ InstallGlobalFunction(IsIrreducibleCoeffList, function(cs, q)
       return false;
     fi;
   od;
-  return true;
+##    return true;
+  for i in [1..d] do 
+     mat[i][i]:=mat[i][i]-One(mat[i][i]); 
+  od;
+  return RankMat(mat) = d-1;
 end);
 
 # About 1/d of all monic polynomials of degree d with constant term a are
