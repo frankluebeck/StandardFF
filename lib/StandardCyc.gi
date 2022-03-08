@@ -163,8 +163,7 @@ end);
 ##  gap> v := Indeterminate(FF(7,1), "v");
 ##  v
 ##  gap> px := MinimalPolynomial(FF(7,1), x, v);;
-##  gap> py := MinimalPolynomial(FF(7,1), y, v);
-##  v^12+Z(7)*v^11+Z(7)^2*v^10-v^9+v^6-v^4-v^3+Z(7)^5*v^2+Z(7)*v+Z(7)^5
+##  gap> py := MinimalPolynomial(FF(7,1), y, v);;
 ##  gap> Value(py, PowerMod(v, (Size(F)-1)/(Size(K)-1), px)) mod px;
 ##  0*Z(7)
 ##  </Example>

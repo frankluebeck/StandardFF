@@ -1098,7 +1098,7 @@ end);
 ##  gap> a := PrimitiveElement(F);; a := a^11-3*a^5+a;
 ##  x12^11+Z(17)^9*x12^5+x12
 ##  gap> t := ToTowerElement(F, a);
-##  <FFTower(17;2,2,3):[ 0, 0, 10, 16, 0, 0, 3, 15, 0, 0, 16, 9 ]>
+##  <FFTower(17;2,2,3):[ 0, 0, 11, 10, 0, 0, 16, 4, 0, 0, 16, 13 ]>
 ##  gap> a^12345 = FromTowerElement(F, t^12345);
 ##  true
 ##  gap> v := AsVector(a);
@@ -1111,7 +1111,7 @@ end);
 ##  gap> ElementPolynomial(F, pol^10) = a^10;
 ##  true
 ##  gap> nr := SteinitzNumber(a);
-##  340709196750181
+##  477792582014518
 ##  gap> a = ElementSteinitzNumber(F, nr);
 ##  true
 ##  gap> rgens := GeneratorsOfField(T); # generators of prime degree steps
@@ -1582,11 +1582,11 @@ end);
 ##  <Example>gap> F := FF(23,18);
 ##  FF(23, 18)
 ##  gap> st := SteinitzPairConwayGenerator(F);
-##  [ 18, 2553999235694638106966959 ]
+##  [ 18, 2654887896079021892805033 ]
 ##  gap> st9 := SteinitzPairConwayGenerator(FF(23,9));
-##  [ 9, 841141205152 ]
+##  [ 9, 960956538681 ]
 ##  gap> st6 := SteinitzPairConwayGenerator(FF(23,6));
-##  [ 6, 36792796 ]
+##  [ 6, 115621191 ]
 ##  gap> z  := ElementSteinitzNumber(F, st[2]);;
 ##  gap> z9 := ElementSteinitzNumber(F, SteinitzNumber(F, st9));;
 ##  gap> z6 := ElementSteinitzNumber(F, SteinitzNumber(F, st6));;
@@ -1600,7 +1600,7 @@ end);
 ##  true
 ##  gap> l := Filtered(ZeroesConway(F), x-> x^e9 = z9 and x^e6 = z6);;
 ##  gap> List(l, SteinitzNumber);
-##  [ 2553999235694638106966959 ]
+##  [ 2654887896079021892805033 ]
 ##  </Example>
 ##  </Description>
 ##  </ManSection>

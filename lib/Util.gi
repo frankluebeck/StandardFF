@@ -551,7 +551,7 @@ end);
 ##  gap> z := ElementSteinitzNumber(F, st[2]);;
 ##  gap> x := StandardPrimitiveRoot(F);;
 ##  gap> DLog(z, x, Size(F)-1);
-##  103390307992785367583
+##  5082178764529380352463
 ##  gap> K := GF(67,12);
 ##  GF(67^12)
 ##  gap> zz := Z(67^12);
