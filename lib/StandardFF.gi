@@ -56,9 +56,10 @@ end;
 
 # for odd p extensions of 2 power degree
 SFFHelper.2PowerStandardFF := function(p, k)
-  local F, lr, p2, v, l, m, a, b, q, q2, pol1, v1, c1, n1, c2, n2, u;
+  local F, o, lr, p2, v, a, pn, i, b, m, q, q2, qn, pol1, v1, bb;
   F := GF(p);
   SetIsStandardPrimeField(F, true);
+  o := One(F);
   lr := SFFHelper.PrepareGFpForStandardFF(p, 2);
   if IsBound(lr[k]) then 
     return lr[k];
@@ -66,64 +67,51 @@ SFFHelper.2PowerStandardFF := function(p, k)
   p2 := (p-1)/2;
   v := Indeterminate(F, Concatenation("x2_", String(k)));
   if k = 1 then
-    v := Indeterminate(F, "x2_1");
-    if p2 mod 2 = 1 then
-      Add(lr, [v^2+1, v]);
+    if p mod 4 = 3 then
+      # -1 is no square
+      a := -o;
     else
-      l := 2;
-      p2 := p2/2;
-      while p2 mod 2 = 0 do
-        l := l+1;
-        p2 := p2/2;
+      # 2'-part of p-1
+      pn := p2;
+      while pn mod 2 = 0 do
+        pn := pn/2;
       od;
-      # find random 2^l-th root of 1, half of elements will do
-      m := One(F);
-      while IsZero(m) or IsOne(m) do
-        a := Random(F);
-        m := a^((p-1)/2);
+      i := 1;
+      b := o*StandardAffineShift(p, i);
+      # m <> 1 and m <> 0 means that b^pn is no square
+      m := b^p2;
+      while IsOne(m) or IsZero(m) do
+        i := i+1;
+        b := o*StandardAffineShift(p, i);
+        m := b^p2;
       od;
-      a := a^((p-1)/2^l);
-      # now change a for u=l-2 .. 0 such that a^(2^u) is the smaller root
-      # of a^(2^(u+1))
-      for u in [l-2,l-3..0] do
-        b := a^(2^u);
-        if IntFFE(-b) < IntFFE(b) then
-          a := a^(1+2^(l-1-u));
-        fi;
-      od;
-      Add(lr, [v^2-a, v]);
+      a := b^pn;
     fi;
+    Add(lr, [v^2-a, v]);
   elif k=2 then
     SFFHelper.2PowerStandardFF(p, 1);
-    if p2 mod 2 = 1 then
+    if p mod 4 = 3 then
       # we proceed as above but now for q = p^2 instead of p
       q := p^2;
-      q2 := (q-1)/4;
-      l := 2;
-      while q2 mod 2 = 0 do
-        l := l+1;
-        q2 := q2/2;
+      q2 := (q-1)/2;
+      qn := q2;
+      while qn mod 2 = 0 do
+        qn := qn/2;
       od;
       pol1 := lr[1][1];
       v1 := lr[1][2];
-      m := v1^0;
+      i := 1;
+      bb := StandardAffineShift(q, i);
+      b := (bb mod p) + (bb-(bb mod p))/p * v1;
+      m := PowerMod(b, q2, pol1);
       while IsOne(m) or IsZero(m) do
-        a := Random(F)+Random(F)*v1;
-        m := PowerMod(a, (q-1)/2, pol1);
+        i := i+1;
+        bb := StandardAffineShift(q, i);
+        b := (bb mod p) + (bb-(bb mod p))/p * v1;
+        m := PowerMod(b, q2, pol1);
       od;
-      a := PowerMod(a, (q-1)/2^l, pol1);
-      # here we use Steinitz number x + y*p for x+y*v1 for comparison
-      for u in [l-2,l-3..0] do
-        b := PowerMod(a, 2^u, pol1);
-        c1 := List(CoefficientsOfUnivariatePolynomial(b), IntFFE);
-        n1 := c1[1]+p*c1[2];
-        b := (b * m) mod pol1;
-        c2 := List(CoefficientsOfUnivariatePolynomial(b), IntFFE);
-        n2 := c2[1]+p*c2[2];
-        if n2 < n1 then
-          a := PowerMod(a, 1+2^(l-1-u), pol1);
-        fi;
-      od;
+      # a is no square in F_{p^2}
+      a := PowerMod(b, qn, pol1);
       Add(lr, [v^2-a, v]);
     else
       Add(lr, [v^2-lr[1][2], v]);
@@ -465,10 +453,10 @@ SFFHelper.StandardIrreducibleCoeffListCACHE := function(L, r, a)
 end;
 
 SFFHelper.rPowerStandardFFRandom := function(p, r, k)
-  local F, lr, t, a, zeta, zi, min, minmul, rr, L, 
-        v, m, vec, mp, K, i, j, Lst, ast;
+  local F, o, lr, pr, pn, i, b, m, a, v, L, Lst, ast, vec, mp, K;
   F := GF(p);
   SetIsStandardPrimeField(F, true);
+  o := One(F);
   lr := SFFHelper.PrepareGFpForStandardFF(p, r);
   if IsBound(lr[k+1]) then 
     return lr[k+1];
@@ -476,43 +464,23 @@ SFFHelper.rPowerStandardFFRandom := function(p, r, k)
   if k = 0 then
     if (p-1) mod r = 0 then
       # simplest case, prime field has r-th roots of 1
-      t := 1;
-      a := (p-1)/r;
-      while a mod r = 0 do
-        t := t+1; 
-        a := a/r;
+      pr := (p-1)/r;
+      pn := pr;
+      while pn mod r = 0 do
+        pn := pn/r;
       od;
-      # random primitive r^t-th root, (1-1/r) of all elements are good
-      a := Random(F);
-      zeta := a^((p-1)/r);
-      while IsOne(zeta) or IsZero(zeta) do
-        a := Random(F);
-        zeta := a^((p-1)/r);
+      i := 1;
+      b := o*StandardAffineShift(p, i);
+      # if m = 1 or m = 0 then b^pn is an r-th power
+      m := b^pr;
+      while IsOne(m) or IsZero(m) do
+        i := i+1;
+        b := o*StandardAffineShift(p, i);
+        m := b^pr;
       od;
-      a := a^((p-1)/r^t);
-      # now find the Steinitz lexicographically smallest a
-      for i in [t-1,t-2..0] do
-        zi := a^(r^i);
-        min := zi;
-        minmul := 0;
-        if i=t-1 then
-          rr := r-2;
-        else
-          rr := r-1;
-        fi;
-        for j in [1..rr] do
-          zi := zi*zeta;
-          if IntFFE(zi) < IntFFE(min) then
-            min := zi;
-            minmul := j;
-          fi;
-        od;
-        a := a^(1+minmul*r^(t-1-i));
-        if i=t-1 then
-          zeta := min;
-        fi;
-      od;
-      Add(lr, [,a,F,a,t]);
+      # a has no r-th root in F_p
+      a := b^pn;
+      Add(lr, [,a,F,a]);
     else
       # we use smallest/random polynomials, here we just fix 1 as
       # norm of next step
@@ -524,8 +492,7 @@ SFFHelper.rPowerStandardFFRandom := function(p, r, k)
     v := Indeterminate(F, Concatenation("x",String(r),"_",String(k)));
     if  (p-1) mod r = 0 then
       # easy case with r-th roots of 1 in prime field
-      t := lr[k][5];
-      lr[k+1] := [v^r-lr[k][2], v, 0, v, t+1];
+      lr[k+1] := [v^r-lr[k][2], v, 0, v];
     else
       L := lr[k][3];
       a := lr[k][4];
@@ -682,7 +649,7 @@ InstallGlobalFunction(StandardFiniteFieldTower, function(p, n, variant...)
   return res;
 end);
 
-# standardized primitive element is sum of last prime power generators
+# standardized primitive element is product of last prime power generators
 InstallMethod(PrimitiveElement, ["IsStandardFiniteFieldTower"], function(L)
   local gen;
   gen := GeneratorsOfField(L);
