@@ -127,11 +127,10 @@ InstallGlobalFunction(StandardAffineShift, function(q, i)
     m := SASCache[2];
     a := SASCache[3];
   else 
-    if q mod 2 = 0 then
-      m := 3^LogInt(q, 3);
-    else
-      m := 2^Log2Int(q);
-    fi;
+    m := QuoInt(4*q, 5);
+    while Gcd(m, q) <> 1 do
+      m := m-1;
+    od;
     a := QuoInt(2*q, 3);
     SASCache{[1..3]} := [q,m,a];
   fi;
