@@ -7,6 +7,229 @@
 ##  indices, and as single extensions over the prime field.
 ##  
 
+SteinitzNumberForPrimeDegree := function(p, r, k)
+  local Fp, stpd, stpdr, q, F, o, i, nr, x, a, l;
+  Fp := StandardFiniteField(p, 1);
+  if not IsBound(Fp!.SteinitzPrimeDeg) then
+    Fp!.SteinitzPrimeDeg := [];
+  fi;
+  stpd := Fp!.SteinitzPrimeDeg;
+  if not IsBound(stpd[r]) then
+    stpd[r] := [];
+  fi;
+  stpdr := stpd[r];
+  if not IsBound(stpdr[k]) then
+    if p = r then
+      # Artin-Schreier case
+      # Xk^p - Xk - \prod_{1..k-1} x_i^(p-1)
+      # for q = p^(p^(k-1)) this yields (p-1)*(q + q/p)
+      q := p^(p^(k-1));
+      stpdr[k] := (p-1)*(q+q/p);
+    elif r = 2 and p mod 4 = 3 then
+      # special case for k = 1, 2
+      if k = 1 then
+        # X^2 + 1
+        stpdr[k] := 1;
+      elif k = 2 then
+        # find a non-square
+        F := StandardFiniteField(p, 2, 1);
+        o := One(F);
+        i := 1;
+        nr := StandardAffineShift(p^2, i);
+        x := ElementSteinitzNumber(F, nr);
+        while nr = 0 or x^((p^2-1)/2) = o do
+          i := i+1;
+          nr := StandardAffineShift(p^2, i);
+          x := ElementSteinitzNumber(F, nr);
+        od;
+        # X^2 - x
+        stpdr[k] := SteinitzNumber(-x);
+      else
+        # Xk - x{k-1}
+        stpdr[k] := (p-1)*p^(2^(k-2));
+      fi;
+    elif (p-1) mod r = 0 then
+      if k = 1 then
+        # find a non r-th power
+        i := 1;
+        nr := StandardAffineShift(p, i);
+        while nr = 0 or PowerMod(nr, (p-1)/r, p) = 1 do
+          i := i+1;
+          nr := StandardAffineShift(p, i);
+        od;
+        # X^r - nr
+        stpdr[k] := p - nr;
+      else
+        # Xk^r - x{k-1}
+        stpdr[k] := (p-1)*p^(r^(k-2));
+      fi;
+    else
+      # in general we use pseudo random polynomials
+      F := StandardFiniteField(p, r^(k-1));
+      if k = 1 then
+        # new generator will have norm 1
+        a := -One(F);
+      else
+        # new generator will have previous one as norm
+        a := -PrimitiveElement(F);
+      fi;
+      l := StandardIrreducibleCoeffList(F, r, a);
+      Remove(l);
+      while IsZero(l[Length(l)]) do
+        Remove(l);
+      od;
+      stpdr[k] := ValuePol(List(l, SteinitzNumber), Size(F));
+    fi;
+  fi;
+  return stpdr[k];
+end;
+
+# Return K[X] / f with TowerBasis 
+# where f = poly(lcoeffs) + X^deg
+# and K = F[Y] / g  is assumed to have TowerBasis.
+# (the semiechelon code is from 'Matrix_OrderPolynomialInner')
+_ExtensionWithTowerBasis := function(K, deg, lcoeffs)
+  local dK, zK, zKl, co, d, F, zero, one, pK, vec, vecs, pols, 
+        zeroes, pmat, v, w, p, piv, x, c, vnam, var, ivar, Kp, fam, i, j;
+  dK := DegreeOverPrimeField(K);
+  zK := Zero(K);
+  d := dK * deg;
+  F := LeftActingDomain(K);
+  zero := Zero(F);
+  one := One(F);
+  pK := PrimitivePowersInTowerBasis(K);
+  co := function(x)
+    local res;
+    if dK = 1 then
+      res := [x];
+    else
+      res := x![1];
+      if not IsList(res) then
+        res := zero * [1..dK];
+        res[1] := x![1];
+      fi;
+    fi;
+    ConvertToVectorRep(res);
+    return res;
+  end;
+
+  # we collect X^i mod f, i = 0..d*dK-1, and compute
+  # minimal polynomial over F
+  # one
+  vec := NullMat(1, d, F)[1];
+  vec[1] := one;
+  vecs := [];
+  pols := [];
+  zeroes := [];
+  pmat := [];
+  # X
+  v := NullMat(1,deg,K)[1];
+  v[1] := One(K);
+  for i in [1..d+1] do
+    if i <= d then
+      Add(pmat,vec);
+    fi;
+    w := ShallowCopy(vec);
+    p := ShallowCopy(zeroes);
+    Add(p, one);
+    ConvertToVectorRepNC(p, F);
+    piv := PositionNonZero(w, 0);
+    # reduce
+    while piv <= d and IsBound(vecs[piv]) do
+        x := -w[piv];
+        if IsBound(pols[piv]) then
+            AddCoeffs(p, pols[piv], x);
+        fi;
+        AddRowVector(w, vecs[piv],  x, piv, d);
+        piv := PositionNonZero(w,piv);
+    od;
+    if i <= d then
+      x := Inverse(w[piv]);
+      MultVector(p, x);
+      MakeImmutable(p);
+      pols[piv] := p;
+      MultVector(w, x );
+      MakeImmutable(w);
+      vecs[piv] := w;
+      Add(zeroes,zero);
+
+      # multiply by X and find next vec in tower basis
+      c := -v[deg];
+      for j in [deg, deg-1..2] do
+        v[j] := v[j-1];
+      od;
+      v[1] := zK;
+      if not IsZero(c) then
+        for j in [1..Length(lcoeffs)] do
+          v[j] := v[j] + c*lcoeffs[j];
+        od;
+      fi;
+      vec := [];
+      for c in v do
+        Append(vec, co(c) * pK);
+      od;
+      ConvertToVectorRepNC(vec, F);
+    fi;
+  od;
+  # Now the last p is the minimal polynomial over F
+  # and pmat are the primitive powers in the tower basis for the new
+  # extension.
+  MakeImmutable(p);
+  ConvertToMatrixRep(pmat);
+
+  # generate the new extension
+  vnam := Concatenation("x", String(d));
+  var := Indeterminate(F, vnam);
+  ivar := IndeterminateNumberOfUnivariateLaurentPolynomial(var);
+  Kp := AlgebraicExtension(F, UnivariatePolynomial(F, p, ivar), vnam);
+  Setter(IsStandardFiniteField)(Kp, true);
+  Setter(PrimitivePowersInTowerBasis)(Kp, pmat);
+  # let elements know to be in standard field
+  fam := FamilyObj(RootOfDefiningPolynomial(Kp));
+  fam!.extType := Subtype(fam!.extType, IsStandardFiniteFieldElement);
+  fam!.baseType := Subtype(fam!.baseType, IsStandardFiniteFieldElement);
+  SetFilterObj(OneImmutable(Kp), IsStandardFiniteFieldElement);
+  SetFilterObj(ZeroImmutable(Kp), IsStandardFiniteFieldElement);
+  SetFilterObj(RootOfDefiningPolynomial(Kp), IsStandardFiniteFieldElement);
+
+  return Kp;
+end;
+
+InstallGlobalFunction(StandardFiniteField, function(p, n)
+  local F, id, ext, fac, lf, n1, nK, st, q1, l, K, lK, c, L;
+  if not IsPrimeInt(p) then
+    Error("StandardFiniteField: first argument must be a prime\n");
+  fi;
+  F := GF(p);
+  # we cache extensions in prime field
+  if not IsBound(F!.extensions) then
+    SetIsStandardPrimeField(F, true);
+    F!.extensions := [F];
+    id := IdentityMat(1, F);
+    ConvertToMatrixRep(id, p);
+    Setter(PrimitivePowersInTowerBasis)(F, id);
+  fi;
+  ext := F!.extensions;
+  if IsBound(ext[n]) then
+    return ext[n];
+  fi;
+  
+  # construct field recursively via prime degree extensions
+  fac := Collected(Factors(n));
+  lf := fac[Length(fac)];
+  n1 := lf[1]^(lf[2]-1);
+  nK := n/lf[1];
+  st := SteinitzNumberForPrimeDegree(p, lf[1], lf[2]);
+  q1 := p^n1;
+  l := CoefficientsQadic(st, q1);
+  K := StandardFiniteField(p, nK);
+  lK := List(l, y-> EmbedSteinitz(p, n1, nK, y));
+  c := List(lK, nr-> ElementSteinitzNumber(K, nr));
+  L := _ExtensionWithTowerBasis(K, lf[1], c);
+  ext[n] := L;
+  return L;
+end);
+
 # we cache known extensions in prime field
 SFFHelper.PrepareGFpForStandardFF := function(p, r, variant...)
   local nam, F, l, lr;
@@ -820,88 +1043,6 @@ TowerMon.MinPolPrimEltTower := function(T, vnr)
 end;
 
 
-# standard finite field as simple extension over GF(p)
-InstallGlobalFunction(StandardFiniteFieldNonSparse, function(p, n)
-  local Fp, K, x, vnam, v, iv, xmat, mp, xp, Kp, i, fam;
-  if n=1 then 
-    Kp := GF(p);
-    SetIsStandardPrimeField(Kp, true);
-    return Kp; 
-  fi;
-  Fp := FF(p,1);
-  K := StandardFiniteFieldTower(p, n);
-  x := PrimitiveElement(K);
-  vnam := Concatenation("x", String(n));
-  v := Indeterminate(Fp, vnam);
-  iv := IndeterminateNumberOfUnivariateLaurentPolynomial(v);
-  # x as very sparse matrix acting on tower basis
-  xmat := List(TowerBasis(K), b-> AsVector(b*x));
-  # minimal polynomial of x is minimal polynomial of xmat
-  #mp := MinimalPolynomial(Fp, xmat, iv);
-  mp := SFFHelper.MinimalPolynomialCACHE(Fp, xmat, iv);
-  # we store the powers of x in tower basis
-  xp := [0*xmat[1]];
-  xp[1][1] := One(Fp);
-  for i in [1..n-1] do
-    Add(xp, xp[i] * xmat);
-  od;
-  Kp := AlgebraicExtensionNC(GF(p), mp, vnam);
-  Setter(Tower)(Kp, K);
-  Setter(IsStandardFiniteField)(Kp, true);
-  Setter(PrimitivePowersInTowerBasis)(Kp, xp);
-  # let elements know to be in standard field
-  fam := FamilyObj(RootOfDefiningPolynomial(Kp));
-  fam!.extType := Subtype(fam!.extType, IsStandardFiniteFieldElement);
-  fam!.baseType := Subtype(fam!.baseType, IsStandardFiniteFieldElement);
-  SetFilterObj(OneImmutable(Kp), IsStandardFiniteFieldElement);
-  SetFilterObj(ZeroImmutable(Kp), IsStandardFiniteFieldElement);
-  SetFilterObj(RootOfDefiningPolynomial(Kp), IsStandardFiniteFieldElement);
-
-  return Kp;
-end);
-# faster version using sparse action of primitive element on tower basis
-# and Berlekamp-Massey for minimal polynomial
-InstallGlobalFunction(StandardFiniteField, function(p, n)
-  local Kp, cf, Fp, K, x, vnam, v, iv, xpmp, fam;
-  if n=1 then 
-    Kp := GF(p);
-    SetIsStandardPrimeField(Kp, true);
-    return Kp; 
-  fi;
-  # use the NonSparse version if large part of n is a prime power
-  if n > 100 then
-    cf := Collected(Factors(n));
-    if ForAny(cf, a-> a[2]>1 and (a[1]^a[2])^2 > n) then
-      return StandardFiniteFieldNonSparse(p, n);
-    fi;
-  fi;
-  Fp := FF(p,1);
-  K := StandardFiniteFieldTower(p, n);
-  x := PrimitiveElement(K);
-  vnam := Concatenation("x", String(n));
-  v := Indeterminate(Fp, vnam);
-  iv := IndeterminateNumberOfUnivariateLaurentPolynomial(v);
-  if IsPrimeInt(n) then
-    # nothing to compute
-    xpmp := [IdentityMat(n, Fp), UnivariatePolynomial(Fp, K!.coeffs, iv)];
-  else
-    xpmp := TowerMon.MinPolPrimEltTower(K, iv);
-  fi;
-  Kp := AlgebraicExtensionNC(GF(p), xpmp[2], vnam);
-  Setter(Tower)(Kp, K);
-  Setter(IsStandardFiniteField)(Kp, true);
-  Setter(PrimitivePowersInTowerBasis)(Kp, xpmp[1]);
-  # let elements know to be in standard field
-  fam := FamilyObj(RootOfDefiningPolynomial(Kp));
-  fam!.extType := Subtype(fam!.extType, IsStandardFiniteFieldElement);
-  fam!.baseType := Subtype(fam!.baseType, IsStandardFiniteFieldElement);
-  SetFilterObj(OneImmutable(Kp), IsStandardFiniteFieldElement);
-  SetFilterObj(ZeroImmutable(Kp), IsStandardFiniteFieldElement);
-  SetFilterObj(RootOfDefiningPolynomial(Kp), IsStandardFiniteFieldElement);
-
-  return Kp;
-end);
-
 # default for other fields
 InstallOtherMethod(IsStandardFiniteField, ["IsField"], ReturnFalse);
 
@@ -1245,6 +1386,22 @@ StdMonDegs := function(n)
     Append(res, new);
   od;
   return res;
+end;
+# map of monomials for degree n into monomials of degree m (by positions)
+StdMonMap := function(n, m)
+  local d;
+  d := StdMonDegs(m);
+  return Filtered([1..Length(d)], i-> n mod d[i] = 0);
+end;
+
+# Embedding of element in FF(p,n) into FF(p,m) by Steinitz numbers
+EmbedSteinitz := function(p, n, m, nr)
+  local l, map, c;
+  l := CoefficientsQadic(nr, p);
+  map := StdMonMap(n, m){[1..Length(l)]};
+  c := 0*[1..map[Length(map)]];
+  c{map} := l;
+  return ValuePol(c, p);
 end;
 
 InstallMethod(ExtRepOfObj,"baseFieldElm",true,
