@@ -7,7 +7,7 @@
 ##  indices, and as single extensions over the prime field.
 ##  
 
-SteinitzNumberForPrimeDegree := function(p, r, k)
+InstallGlobalFunction(SteinitzNumberForPrimeDegree, function(p, r, k)
   local Fp, stpd, stpdr, q, F, o, i, nr, x, a, l;
   Fp := StandardFiniteField(p, 1);
   if not IsBound(Fp!.SteinitzPrimeDeg) then
@@ -82,13 +82,18 @@ SteinitzNumberForPrimeDegree := function(p, r, k)
     fi;
   fi;
   return stpdr[k];
-end;
+end);
 
-# Return K[X] / f with TowerBasis 
-# where f = poly(lcoeffs) + X^deg
-# and K = F[Y] / g  is assumed to have TowerBasis.
-# (the semiechelon code is from 'Matrix_OrderPolynomialInner')
-_ExtensionWithTowerBasis := function(K, deg, lcoeffs)
+# args: K, deg, lcoeffs, b
+# Let f = poly(lcoeffs) + X^deg be irreducible in K[X].
+# Return K[X] / f with primitve element bX mod f, where b in K
+# such that bX mod f is a generator over the prime field.
+# We assume that K = F[Y] / g and K knows powers of the primitive element
+# Y mod g in its tower basis.  
+# The returned fields also stores the powers of bX mod f in its tower
+# basis.
+# (The semiechelon code is similar to 'Matrix_OrderPolynomialInner'.)
+InstallGlobalFunction(_ExtensionWithTowerBasis, function(K, deg, lcoeffs, b)
   local dK, zK, zKl, co, d, F, zero, one, pK, vec, vecs, pols, 
         zeroes, pmat, v, w, p, piv, x, c, vnam, var, ivar, Kp, fam, i, j;
   dK := DegreeOverPrimeField(K);
@@ -113,8 +118,8 @@ _ExtensionWithTowerBasis := function(K, deg, lcoeffs)
     return res;
   end;
 
-  # we collect X^i mod f, i = 0..d*dK-1, and compute
-  # minimal polynomial over F
+  # We collect (bX)^i mod f, i = 0..d*dK-1, and compute
+  # the minimal polynomial of bX over F.
   # one
   vec := NullMat(1, d, F)[1];
   vec[1] := one;
@@ -153,7 +158,8 @@ _ExtensionWithTowerBasis := function(K, deg, lcoeffs)
       vecs[piv] := w;
       Add(zeroes,zero);
 
-      # multiply by X and find next vec in tower basis
+      # multiply by  bX and find next vec in tower basis
+      v := b*v;
       c := -v[deg];
       for j in [deg, deg-1..2] do
         v[j] := v[j-1];
@@ -181,7 +187,7 @@ _ExtensionWithTowerBasis := function(K, deg, lcoeffs)
   vnam := Concatenation("x", String(d));
   var := Indeterminate(F, vnam);
   ivar := IndeterminateNumberOfUnivariateLaurentPolynomial(var);
-  Kp := AlgebraicExtension(F, UnivariatePolynomial(F, p, ivar), vnam);
+  Kp := AlgebraicExtensionNC(F, UnivariatePolynomial(F, p, ivar), vnam);
   Setter(IsStandardFiniteField)(Kp, true);
   Setter(PrimitivePowersInTowerBasis)(Kp, pmat);
   # let elements know to be in standard field
@@ -193,10 +199,10 @@ _ExtensionWithTowerBasis := function(K, deg, lcoeffs)
   SetFilterObj(RootOfDefiningPolynomial(Kp), IsStandardFiniteFieldElement);
 
   return Kp;
-end;
+end);
 
 InstallGlobalFunction(StandardFiniteField, function(p, n)
-  local F, id, ext, fac, lf, n1, nK, st, q1, l, K, lK, c, L;
+  local F, id, ext, fac, lf, n1, nK, st, q1, l, K, lK, c, L, b;
   if not IsPrimeInt(p) then
     Error("StandardFiniteField: first argument must be a prime\n");
   fi;
@@ -225,7 +231,11 @@ InstallGlobalFunction(StandardFiniteField, function(p, n)
   K := StandardFiniteField(p, nK);
   lK := List(l, y-> EmbedSteinitz(p, n1, nK, y));
   c := List(lK, nr-> ElementSteinitzNumber(K, nr));
-  L := _ExtensionWithTowerBasis(K, lf[1], c);
+  # primitive element of new extension is product of prime power
+  # degree generators, class of bX, we construct b (product of the 
+  # other prime power degree generators):
+  b := ElementSteinitzNumber(K, p^(Position(StdMonDegs(nK), nK/n1)-1));
+  L := _ExtensionWithTowerBasis(K, lf[1], c, b);
   ext[n] := L;
   return L;
 end);
@@ -1375,7 +1385,7 @@ InstallGlobalFunction(StdMon, function(n)
 end);
 
 # just the degrees
-StdMonDegs := function(n)
+InstallGlobalFunction(StdMonDegs, function(n)
   local f, a, res, new, i;
   if n = 1 then return [1]; fi;
   f := Collected(Factors(n));
@@ -1386,23 +1396,24 @@ StdMonDegs := function(n)
     Append(res, new);
   od;
   return res;
-end;
+end);
 # map of monomials for degree n into monomials of degree m (by positions)
-StdMonMap := function(n, m)
+InstallGlobalFunction(StdMonMap, function(n, m)
   local d;
   d := StdMonDegs(m);
   return Filtered([1..Length(d)], i-> n mod d[i] = 0);
-end;
+end);
 
 # Embedding of element in FF(p,n) into FF(p,m) by Steinitz numbers
-EmbedSteinitz := function(p, n, m, nr)
+InstallGlobalFunction(EmbedSteinitz, function(p, n, m, nr)
   local l, map, c;
+  if n=m or nr = 0 then return nr; fi;
   l := CoefficientsQadic(nr, p);
   map := StdMonMap(n, m){[1..Length(l)]};
   c := 0*[1..map[Length(map)]];
   c{map} := l;
   return ValuePol(c, p);
-end;
+end);
 
 InstallMethod(ExtRepOfObj,"baseFieldElm",true,
   [IsAlgebraicElement and IsAlgBFRep],0,

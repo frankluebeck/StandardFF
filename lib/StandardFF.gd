@@ -8,7 +8,9 @@
 ##  
 
 # standard finite fields as towers of prime degree extensions
+DeclareGlobalFunction("SteinitzNumberForPrimeDegree");
 DeclareGlobalFunction("StandardPrimeDegreePolynomial");
+DeclareGlobalFunction("_ExtensionWithTowerBasis");
 DeclareGlobalFunction("StandardFiniteFieldTower");
 # standard finite fields as simple extensions over prime field GF(p)
 DeclareGlobalFunction("StandardFiniteFieldNonSparse");
@@ -44,6 +46,9 @@ MakeReadOnlyGlobal("TowerMon");
 
 # embeddings
 DeclareGlobalFunction("StdMon");
+DeclareGlobalFunction("StdMonDegs");
+DeclareGlobalFunction("StdMonMap");
+DeclareGlobalFunction("EmbedSteinitz");
 DeclareGlobalFunction("StandardIsomorphismGF");
 DeclareCategory("IsStandardFiniteFieldEmbedding", IsFieldHomomorphism);
 DeclareOperation("SteinitzPair", [IsStandardFiniteFieldElement]);
