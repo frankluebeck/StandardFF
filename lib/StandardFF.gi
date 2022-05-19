@@ -32,7 +32,7 @@ InstallGlobalFunction(SteinitzNumberForPrimeDegree, function(p, r, k)
         stpdr[k] := 1;
       elif k = 2 then
         # find a non-square
-        F := StandardFiniteField(p, 2, 1);
+        F := StandardFiniteField(p, 2);
         o := One(F);
         i := 1;
         nr := StandardAffineShift(p^2, i);
