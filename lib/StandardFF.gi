@@ -258,7 +258,7 @@ end);
 ##  gap> F := FF(13, 9*5);
 ##  FF(13, 45)
 ##  gap> StandardPrimeDegreePolynomial(13, 3, 1);
-##  x3_1^3+Z(13)^10
+##  x3_1^3+Z(13)^7
 ##  gap> StandardPrimeDegreePolynomial(13, 3, 2);
 ##  x3_2^3-x3_1
 ##  gap> StandardPrimeDegreePolynomial(13, 5, 1);
@@ -701,12 +701,14 @@ end);
 ##  gap> emb := Embedding(H, F);
 ##  MappingByFunction( FF(7, 45), FF(7, 360), function( x ) ... end )
 ##  gap> y := PrimitiveElement(H);
-##  x45
+##  ZZ(7,45,[0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+##  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
 ##  gap> x := y^emb;;
 ##  gap> ((y+One(H))^12345)^emb = (x+One(F))^12345;
 ##  true
 ##  gap> PreImageElm(emb, x^5);
-##  x45^5
+##  ZZ(7,45,[0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+##  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
 ##  gap> PreImageElm(emb, PrimitiveElement(F));
 ##  fail
 ##  gap> SteinitzNumber(y);
@@ -823,9 +825,9 @@ end);
 ##  gap> H := FF(7, 12);
 ##  FF(7, 12)
 ##  gap> b := ElementSteinitzNumber(H, 117649);
-##  x12
+##  ZZ(7,12,[0,1,0,0,0,0,0,0,0,0,0,0])
 ##  gap> Value(MinimalPolynomial(FF(7,1), t), b);
-##  !0*Z(7)
+##  ZZ(7,12,[0])
 ##  gap> nr := SteinitzNumber(t);
 ##  282475249
 ##  gap> nr = SteinitzNumber(F, sp);
@@ -936,11 +938,11 @@ end);
 ##  <Example>gap> F := FF(23,18);
 ##  FF(23, 18)
 ##  gap> st := SteinitzPairConwayGenerator(F);
-##  [ 18, 2654887896079021892805033 ]
+##  [ 18, 1452488057533031176256047 ]
 ##  gap> st9 := SteinitzPairConwayGenerator(FF(23,9));
-##  [ 9, 960956538681 ]
+##  [ 9, 242037340726 ]
 ##  gap> st6 := SteinitzPairConwayGenerator(FF(23,6));
-##  [ 6, 115621191 ]
+##  [ 6, 74033510 ]
 ##  gap> z  := ElementSteinitzNumber(F, st[2]);;
 ##  gap> z9 := ElementSteinitzNumber(F, SteinitzNumber(F, st9));;
 ##  gap> z6 := ElementSteinitzNumber(F, SteinitzNumber(F, st6));;
@@ -954,7 +956,7 @@ end);
 ##  true
 ##  gap> l := Filtered(ZeroesConway(F), x-> x^e9 = z9 and x^e6 = z6);;
 ##  gap> List(l, SteinitzNumber);
-##  [ 2654887896079021892805033 ]
+##  [ 1452488057533031176256047 ]
 ##  </Example>
 ##  </Description>
 ##  </ManSection>

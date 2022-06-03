@@ -514,11 +514,11 @@ end);
 ##  <Example>gap> F := FF(67, 12);
 ##  FF(67, 12)
 ##  gap> st := SteinitzPairConwayGenerator(F);
-##  [ 12, 5575571448927120404890 ]
+##  [ 12, 5118698034368952035290 ]
 ##  gap> z := ElementSteinitzNumber(F, st[2]);;
 ##  gap> x := StandardPrimitiveRoot(F);;
 ##  gap> DLog(z, x, Size(F)-1);
-##  5082178764529380352463
+##  231901568073107448223
 ##  gap> K := GF(67,12);
 ##  GF(67^12)
 ##  gap> zz := Z(67^12);
@@ -618,7 +618,7 @@ end);
 ##  gap> lK := FindConjugateZeroes(K, p2, 67);;
 ##  gap> lF := FindConjugateZeroes(F, p1, 67);;
 ##  gap> Minimum(List(lF, SteinitzNumber));
-##  12578642085854203709864918398540
+##  12274789318154414216760893584069
 ##  </Example>
 ##  </Description>
 ##  </ManSection>
@@ -962,7 +962,7 @@ end);
 ##  FF(19, 12)
 ##  gap> x := StandardFrobeniusCharacterValue(E(13),F);;
 ##  gap> x^13;
-##  !Z(19)^0
+##  ZZ(19,12,[1])
 ##  gap> x = StandardCyclicGenerator(F, 13);
 ##  true
 ##  gap> cc := (E(13)+1/3)^4;;

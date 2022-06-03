@@ -127,7 +127,7 @@ end);
 ##  <Example>gap> F := FF(67, 18); # Conway polynomial was hard to compute
 ##  FF(67, 18)
 ##  gap> x := PrimitiveElement(F);
-##  x18
+##  ZZ(67,18,[0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
 ##  gap> xprim := StandardPrimitiveRoot(F);;
 ##  gap> k := (Size(F)-1) / Order(x);
 ##  6853662165340556076084083497526
