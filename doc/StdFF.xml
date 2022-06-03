@@ -71,6 +71,7 @@ algebraic closure of  <C>FF(p,1)</C> is uniquely determined  by its degree
 
 <#Include Label="SteinitzPair">
 <#Include Label="FFEmbedding">
+<#Include Label="FFArith">
 <#Include Label="StandardIsomorphismGF">
 
 </Section>

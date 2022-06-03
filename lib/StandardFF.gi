@@ -1069,6 +1069,76 @@ function(L)
   return emb;
 end);
 
+##  <#GAPDoc Label="FFArith">
+##  <ManSection>
+##  <Oper Name="ZZ" Arg="p, n, coeffs" />
+##  <Returns>an element in <C>FF(p, n)</C></Returns>
+##  <Description>
+##  For a  prime <A>p</A>, positive  integer <A>n</A> and an  integer list
+##  <A>coeffs</A>  this function  returns the  element in  <C>FF(<A>p</A>,
+##  <A>n</A>)</C>  represented by  the  polynomial  with coefficient  list
+##  <A>coeffs</A> modulo <A>p</A>. Elements  in standard finite fields are
+##  also printed in this way.
+##  <Example>gap> x := ZZ(19,5,[1,2,3,4,5]);
+##  ZZ(19,5,[1,2,3,4,5])
+##  gap> a := PrimitiveElement(FF(19,5));
+##  ZZ(19,5,[0,1,0,0,0])
+##  gap> x = [1,2,3,4,5]*[a^0,a^1,a^2,a^3,a^4];
+##  true
+##  gap> One(FF(19,5)); # elements in prime field abbreviated
+##  ZZ(19,5,[1])
+##  gap> One(FF(19,5)) = ZZ(19,5,[1]);
+##  true
+##  </Example>
+##  </Description>
+##  </ManSection>
+##  
+##  <ManSection>
+##  <Func Name="MoveToSmallestStandardField" Arg="x" />
+##  <Meth Name="\+" Arg="x, y" Label="for standard finite field elements" />
+##  <Meth Name="\*" Arg="x, y" Label="for standard finite field elements" />
+##  <Meth Name="\-" Arg="x, y" Label="for standard finite field elements" />
+##  <Meth Name="\/" Arg="x, y" Label="for standard finite field elements" />
+##  <Returns>a field element </Returns>
+##  <Description>
+##  Here <A>x</A> and <A>y</A> must  be elements in standard finite fields
+##  (of the same charateristic).
+##  <P/> 
+##  Then  <Ref Func="MoveToSmallestStandardField"  /> returns  the element
+##  <A>x</A> as element of the smallest possible degree extension over the
+##  prime field.
+##  <P/>
+##  The arithmetic operations are even possible when <A>x</A> and <A>y</A>
+##  are not  represented as elements in  the same field. In  this case the
+##  elements are first mapped to the smallest field containing both.
+##  <Example>gap> F := FF(1009,4);
+##  FF(1009, 4)
+##  gap> G := FF(1009,6);
+##  FF(1009, 6)
+##  gap> x := (PrimitiveElement(F)+One(F))^13;
+##  ZZ(1009,4,[556,124,281,122])
+##  gap> y := (PrimitiveElement(G)+One(G))^5;
+##  ZZ(1009,6,[1,5,10,10,5,1])
+##  gap> x+y;
+##  ZZ(1009,12,[557,0,936,713,332,0,462,0,843,191,797,0])
+##  gap> x-y;
+##  ZZ(1009,12,[555,0,73,713,677,0,97,0,166,191,212,0])
+##  gap> x*y;
+##  ZZ(1009,12,[253,289,700,311,109,851,345,408,813,657,147,887])
+##  gap> x/y;
+##  ZZ(1009,12,[690,599,714,648,184,217,563,130,251,675,73,782])
+##  gap> z  := -y + (x+y);
+##  ZZ(1009,12,[556,0,0,713,0,0,784,0,0,191,0,0])
+##  gap> SteinitzPair(z);
+##  [ 4, 125450261067 ]
+##  gap> x=z;
+##  true
+##  gap> MoveToSmallestStandardField(z);
+##  ZZ(1009,4,[556,124,281,122])
+##  </Example>
+##  </Description>
+##  </ManSection>
+##  <#/GAPDoc>
 # creating finite field elements
 InstallMethod(ZZ, ["IsPosInt", "IsPosInt", "IsList"], 
 function(p,d,c)
@@ -1160,25 +1230,4 @@ InstallGlobalFunction(MoveToSmallestStandardField, function(a)
     return PreImageElm(Embedding(F, Fa), a);
   fi;
 end);
-
-##  # for convenience we also allow mixed arithmetic with GF(p,d)
-##  InstallMethod(\+, ["IsStandardFiniteFieldElement", "IsFFE"],
-##  function(a, b)
-##    b := MoveToSmallestStandardField(b);
-##    if IsFFE(b) then
-##      # b is in prime field
-##    return a + MoveToSmallestStandardField(b);
-##  end);
-##  InstallMethod(\+, ["IsFFE", "IsStandardFiniteFieldElement"],
-##  function(a, b)
-##    return MoveToSmallestStandardField(a) + b;
-##  end);
-##  InstallMethod(\*, ["IsStandardFiniteFieldElement", "IsFFE"],
-##  function(a, b)
-##    return a * MoveToSmallestStandardField(b);
-##  end);
-##  InstallMethod(\*, ["IsFFE", "IsStandardFiniteFieldElement"],
-##  function(a, b)
-##    return MoveToSmallestStandardField(a) * b;
-##  end);
 
