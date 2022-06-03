@@ -134,10 +134,6 @@ end);
 ##  gap> xm := StandardCyclicGenerator(F, Order(x));;
 ##  gap> xm = xprim^k;
 ##  true
-##  gap> d := DLog(xm, x, Order(x));
-##  31
-##  gap> xm^d = x;
-##  true
 ##  gap> F := FF(23, 201); # factorization of (|F| - 1) not known 
 ##  FF(23, 201)
 ##  gap> m:=79*269*67939;
@@ -201,25 +197,7 @@ InstallOtherMethod(StandardCyclicGenerator,
 
 
 GAPInfo.tmpfun := function(K)
-  local p, n, res;
-  if UserPreference("StandardFFUseCache") <> true then
-    return StandardCyclicGenerator(K, Size(K)-1);
-  fi;
-  if not IsBound(SFFHelper.PRIMROOTCACHE) then
-    ReadPackage("StandardFF", "data/PRIMROOTCACHE");
-  fi;
-  p := Characteristic(K);
-  n := DegreeOverPrimeField(K);
-  if IsBound(SFFHelper.PRIMROOTCACHE[p]) and 
-                 IsBound(SFFHelper.PRIMROOTCACHE[p][n]) then
-    return ElementSteinitzNumber(K, SFFHelper.PRIMROOTCACHE[p][n]);
-  fi;
-  res := StandardCyclicGenerator(K, Size(K)-1);
-  if not IsBound(SFFHelper.PRIMROOTCACHE[p]) then
-    SFFHelper.PRIMROOTCACHE[p] := [];
-  fi;
-  SFFHelper.PRIMROOTCACHE[p][n] := SteinitzNumber(res);
-  return res;
+  return StandardCyclicGenerator(K, Size(K)-1);
 end;
 InstallMethod(StandardPrimitiveRoot, ["IsStandardFiniteField"],
 GAPInfo.tmpfun);

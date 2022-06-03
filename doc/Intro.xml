@@ -13,9 +13,10 @@ subgroups defined in the article <Cite Key="StdFFCyc"/>.
 The main functions  are <Ref Func="FF"/> to construct the  finite field of
 order <M>p^n</M> and <Ref  Oper="StandardCyclicGenerator"/> to construct a
 standardized generator  of the  multiplicative subgroup  of a  given order
-<M>m</M>  in such  a  finite field.  This even  works  for known  divisors
-<M>m</M> of <M>p^n-1</M> when the full factorization of this number is not
-known.
+<M>m</M> in  such a  finite field.  The condition on  <M>m</M> is  that it
+divides  <M>p^n-1</M>  and that  &GAP;  can  factorize this  number.  (The
+factorization  of  the  multiplicative  group order  <M>p^n-1</M>  is  not
+needed.)
 <P/>
 Each    field    of    order    <M>p^n</M>   comes    with    a    natural
 <M>\mathbb{F}_p</M>-basis which is  a subset of the natural  basis of each
@@ -42,17 +43,17 @@ conditions   as   Conway   polynomials  (see   <Ref   BookName="Reference"
 Func="ConwayPolynomial"/>). This can provide  an alternative for the lifts
 used  by  <Ref  BookName="Reference"  Attr="BrauerCharacterValue"/>  which
 works  for  a  much  wider  set of  finite  field  elements  where  Conway
-polynomials a very difficult or impossible to compute.
+polynomials are very difficult or impossible to compute.
 <P/>
-A   translation  of   existing   Brauer  character   tables  relative   to
-the   lift   defined  by   Conway   polynomials   to  the   lift   defined
-by  our   <Ref  Oper="StandardCyclicGenerator"/>   is  provided   by  <Ref
+A  translation  of  existing  Brauer  character  tables  relative  to  the
+lift  defined   by  Conway  polynomials   to  the  lift  defined   by  our
+<Ref   Oper="StandardCyclicGenerator"/>   can   be  computed   with   <Ref
 Func="StandardValuesBrauerCharacter"/>,   provided  the   relevant  Conway
 polynomials are known.
 <P/>
 The article  <Cite Key="StdFFCyc"/> also defines  a standardized embedding
 of  &GAP;s  finite  fields   constructed  with  <Ref  BookName="Reference"
-Func="GF"/>  into   the  algebraic   closure  of   the  the   prime  field
+Func="GF"/>   into   the   algebraic    closure   of   the   prime   field
 <M>\mathbb{F}_p</M>  constructed   here.  This  is  available   with  <Ref
 Func="StandardIsomorphismGF"/>.
 

@@ -83,6 +83,22 @@ InstallGlobalFunction(SteinitzNumberForPrimeDegree, function(p, r, k)
   fi;
   return stpdr[k];
 end);
+# for displaying the corresponding polynomial
+InstallGlobalFunction(StandardPrimeDegreePolynomial, function(p, r, k)
+  local st, qq, K, c, v;
+  st := SteinitzNumberForPrimeDegree(p, r, k);
+  qq := p^(r^(k-1));
+  K := FF(p, r^(k-1));
+  c := CoefficientsQadic(st, qq);
+  while Length(c) < r do
+    Add(c, 0);
+  od;
+  Add(c, 1);
+  c := List(c, i-> AsPolynomial(ElementSteinitzNumber(K, i)));
+  v := Indeterminate(FF(p,1), Concatenation("x",String(r),"_",String(k)));
+  return ValuePol(c, v);
+end);
+
 
 # args: K, deg, lcoeffs, b
 # Let f = poly(lcoeffs) + X^deg be irreducible in K[X].
@@ -201,6 +217,57 @@ InstallGlobalFunction(_ExtensionWithTowerBasis, function(K, deg, lcoeffs, b)
   return Kp;
 end);
 
+##  <#GAPDoc Label="FF">
+##  <ManSection>
+##  <Heading>Constructing standard finite fields</Heading>
+##  <Func Name="StandardFiniteField" Arg="p, n"/>
+##  <Func Name="FF" Arg="p, n"/>
+##  <Returns>a finite field</Returns>
+##  <Func Name="StandardPrimeDegreePolynomial" Arg="p, r, k" />
+##  <Returns>a polynomial of degree <A>r</A></Returns>
+##  <Description>
+##  The   arguments   are   a   prime  <A>p</A>   and   a   positive   integer
+##  <A>n</A>.   The   function  <Ref   Func="FF"/>   (or   its  synomym   <Ref
+##  Func="StandardFiniteField"/>)  is  one  of  the  main  functions  of  this
+##  package.   It   returns   a   standardized   field   <C>F</C>   of   order
+##  <M><A>p</A>^{<A>n</A>}</M>. It  is  implemented  as  a   simple  extension
+##  over  the   prime  field  <C>GF(p)</C>  using   <Ref  BookName="Reference"
+##  Oper="AlgebraicExtension" />
+##  <P/>
+##  The   polynomials    used   for   the   prime    degree   extensions   are
+##  accessible    with   <Ref    Func="StandardPrimeDegreePolynomial"/>.   For
+##  arguments  <A>p,  r,  k</A>  it  returns  the  irreducible  polynomial  of
+##  degree  <A>r</A>   for  the  <A>k</A>-th  iterated   extension  of  degree
+##  <A>r</A>  over  the  prime  field.  The  polynomial  is  in  the  variable
+##  <C>x</C><Emph>r</Emph><C>_</C><Emph>k</Emph>  and   the  coefficients  can
+##  contain  variables <C>x</C><Emph>r</Emph><C>_</C><Emph>l</Emph>  with <M>l
+##  &lt; k</M>.
+##  <P/>
+##  <Example>gap> Fp := FF(2, 1);
+##  GF(2)
+##  gap> F := FF(2, 100);
+##  FF(2, 100)
+##  gap> Size(F);
+##  1267650600228229401496703205376
+##  gap> p := NextPrimeInt(10^50);
+##  100000000000000000000000000000000000000000000000151
+##  gap> K := FF(p, 60);
+##  FF(100000000000000000000000000000000000000000000000151, 60)
+##  gap> LogInt(Size(K), 10);
+##  3000
+##  gap> F := FF(13, 9*5);
+##  FF(13, 45)
+##  gap> StandardPrimeDegreePolynomial(13, 3, 1);
+##  x3_1^3+Z(13)^10
+##  gap> StandardPrimeDegreePolynomial(13, 3, 2);
+##  x3_2^3-x3_1
+##  gap> StandardPrimeDegreePolynomial(13, 5, 1);
+##  x5_1^5+Z(13)^3*x5_1-Z(13)^0
+##  </Example>
+##  </Description>
+##  </ManSection>
+##  <#/GAPDoc>
+##  
 InstallGlobalFunction(StandardFiniteField, function(p, n)
   local F, id, ext, fac, lf, n1, nK, st, q1, l, K, lK, c, L, b;
   if not IsPrimeInt(p) then
@@ -240,819 +307,6 @@ InstallGlobalFunction(StandardFiniteField, function(p, n)
   return L;
 end);
 
-# we cache known extensions in prime field
-SFFHelper.PrepareGFpForStandardFF := function(p, r, variant...)
-  local nam, F, l, lr;
-  if "Trace" in variant then
-    nam := "rPowerExtTrace";
-  else
-    nam := "rPowerExt";
-  fi;
-
-  F := GF(p);
-  SetIsStandardPrimeField(F, true);
-  if not IsBound(F!.(nam)) then
-    l := [];
-    F!.(nam) := l;
-  else
-    l := F!.(nam);
-  fi;
-  if not IsBound(l[r]) then
-    lr := [];
-    l[r] := lr;
-  else
-    lr := l[r];
-  fi;
-  return lr;
-end;
-
-# k-th iterated polynomials of degree p
-SFFHelper.ArtinSchreierStandardFF := function(p, k)
-  local F, lr, v;
-  F := GF(p);
-  SetIsStandardPrimeField(F, true);
-  lr := SFFHelper.PrepareGFpForStandardFF(p, p);
-  if IsBound(lr[k]) then 
-    return lr[k];
-  fi;
-  if k=1 then
-    # X^P - X -1 is irreducible
-    v := Indeterminate(F, Concatenation("x",String(p),"_1"));
-    Add(lr, [v^p-v-1,v]);
-  else
-    v := Indeterminate(F, Concatenation("x",String(p),"_",String(k)));
-    SFFHelper.ArtinSchreierStandardFF(p, k-1);
-    Add(lr, [v^p - v - Product(List(lr, a-> a[2]))^(p-1), v]);
-  fi;
-  return lr[k];
-end;
-
-# for odd p extensions of 2 power degree
-SFFHelper.2PowerStandardFF := function(p, k)
-  local F, o, lr, p2, v, a, pn, i, b, m, q, q2, qn, pol1, v1, bb;
-  F := GF(p);
-  SetIsStandardPrimeField(F, true);
-  o := One(F);
-  lr := SFFHelper.PrepareGFpForStandardFF(p, 2);
-  if IsBound(lr[k]) then 
-    return lr[k];
-  fi;
-  p2 := (p-1)/2;
-  v := Indeterminate(F, Concatenation("x2_", String(k)));
-  if k = 1 then
-    if p mod 4 = 3 then
-      # -1 is no square
-      a := -o;
-    else
-      # 2'-part of p-1
-      pn := p2;
-      while pn mod 2 = 0 do
-        pn := pn/2;
-      od;
-      i := 1;
-      b := o*StandardAffineShift(p, i);
-      # m <> 1 and m <> 0 means that b^pn is no square
-      m := b^p2;
-      while IsOne(m) or IsZero(m) do
-        i := i+1;
-        b := o*StandardAffineShift(p, i);
-        m := b^p2;
-      od;
-      a := b^pn;
-    fi;
-    Add(lr, [v^2-a, v]);
-  elif k=2 then
-    SFFHelper.2PowerStandardFF(p, 1);
-    if p mod 4 = 3 then
-      # we proceed as above but now for q = p^2 instead of p
-      q := p^2;
-      q2 := (q-1)/2;
-      qn := q2;
-      while qn mod 2 = 0 do
-        qn := qn/2;
-      od;
-      pol1 := lr[1][1];
-      v1 := lr[1][2];
-      i := 1;
-      bb := StandardAffineShift(q, i);
-      b := (bb mod p) + (bb-(bb mod p))/p * v1;
-      m := PowerMod(b, q2, pol1);
-      while IsOne(m) or IsZero(m) do
-        i := i+1;
-        bb := StandardAffineShift(q, i);
-        b := (bb mod p) + (bb-(bb mod p))/p * v1;
-        m := PowerMod(b, q2, pol1);
-      od;
-      # a is no square in F_{p^2}
-      a := PowerMod(b, qn, pol1);
-      Add(lr, [v^2-a, v]);
-    else
-      Add(lr, [v^2-lr[1][2], v]);
-    fi;
-  else
-    SFFHelper.2PowerStandardFF(p, k-1);
-    Add(lr, [v^2-lr[k-1][2], v]);
-  fi;
-  return lr[k];
-end;
-
-# input: r a prime and q a prime power
-# output: list of factors of r-th cyclotomic polynomial over GF(q)
-SFFHelper.GFCyclotomicPolynomials := function(r, q)
-  local F, m, pol, mulmod, powmod, randpol, pols, res, rp, new, g, pl;
-  F := GF(q);
-  SetIsStandardPrimeField(F, true);
-  # in characteristic 2 we fall back to the algorithm in GAP
-  if q mod 2 =0 then
-    return Factors(CyclotomicPolynomial(F, r));
-  fi;
-  # degree of irreducible factors
-  m := OrderMod(q, r);
-  # we compute with coefficient lists 
-  pol := List([1..r], i->Z(q)^0);
-  ConvertToVectorRep(pol, q);
-  if m = r-1 then
-    return [UnivariatePolynomial(F, pol)];
-  fi;
-  # multiply and power modulo X^r - 1
-  mulmod := function(v, w)
-    local prd, i;
-    prd := ProductCoeffs(v,w);
-    for i in [r+1..Length(prd)] do
-      prd[i-r] := prd[i-r] + prd[i];
-    od;
-    return prd{[1..Minimum(Length(prd), r)]};
-  end;
-  powmod := function(v, k)
-    local vp, res;
-    vp := ShallowCopy(v);
-    res := [Z(q)^0];
-    while k > 0 do
-      if k mod 2 = 1 then
-        res := mulmod(res, vp);
-        k := (k-1)/2;
-      else
-        k := k/2;
-      fi;
-      if k > 0 then
-        vp := mulmod(vp, vp);
-      fi;
-    od;
-    return res;
-  end;
-
-  # takes random element mod x^r-1, computes the trace and
-  # raises to the (q-1)/2 power; result +/- 1 is likely to have
-  # non-trivial Gcd with cyclotomic polynomial (see Cantor-Zassenhaus)
-  randpol := function()
-    local v, n, k, i, j;
-    # coeffs of random element mod (x^r - 1)
-    v := List([1..r], i-> Random(F));
-    # trace
-    n := ShallowCopy(v);
-    for i in [0..r-1] do
-      k := i;
-      for j in [1..m-1] do
-        k := (k*q) mod r;
-        n[k+1] := n[k+1]+v[i+1];
-      od;
-    od;
-    return powmod(n, (q-1)/2);
-  end;
-
-  pols := [pol];
-  res := [];
-  # compute random polys as above and take Gcd with known factors
-  # (factors are irreducible if of degree m)
-  while Length(pols) > 0 do
-    rp := randpol();
-    rp[1] := rp[1]-Z(q)^0;
-
-    new := [];
-    for pl in pols do
-      g := GcdCoeffs(rp, pl);
-      if Length(g) > 1 and Length(g) < Length(pl) then
-        if Length(g) = m+1 then
-          Add(res, g);
-        else
-          Add(new, g);
-        fi;
-        g := QuotRemCoeffs(pl, g)[1];
-        if Length(g) = m+1 then
-          Add(res, g);
-        else
-          Add(new, g);
-        fi;
-      else
-        Add(new, pl);
-      fi;
-    od;
-    pols := new;
-  od;
-  return List(res, v-> UnivariatePolynomial(F, v));
-end;
-
-SFFHelper.rPowerStandardFFTrace := function(p, r, k)
-  local F, lr, t, a, zeta, zi, min, minmul, rr, m, z, cps, pp, vcps, 
-        i, L, zc, q, j, sn, snzi, v, cc, e, qr, vec, st, mp, c, K;
-  F := GF(p);
-  SetIsStandardPrimeField(F, true);
-  # let z be the smallest primitive r-th root of
-  # degree m over F_p
-  # we store in lr[k+1] a list with 5 entries:
-  #   * poly for k-th extension K of degree r
-  #   * its variable 
-  #   * finite field tower for K - K[z]
-  #   * a in K[z]
-  #   * t such that a is of order r^t and has no r-th root
-  lr := SFFHelper.PrepareGFpForStandardFF(p, r, "Trace");
-  if IsBound(lr[k+1]) then 
-    return lr[k+1];
-  fi;
-  if k = 0 then
-    if (p-1) mod r = 0 then
-      # simplest case, prime field has r-th roots of 1
-      t := 1;
-      a := (p-1)/r;
-      while a mod r = 0 do
-        t := t+1; 
-        a := a/r;
-      od;
-      # random primitive r^t-th root, (1-1/r) of all elements are good
-      a := Random(F);
-      zeta := a^((p-1)/r);
-      while IsOne(zeta) or IsZero(zeta) do
-        a := Random(F);
-        zeta := a^((p-1)/r);
-      od;
-      a := a^((p-1)/r^t);
-      # now find the Steinitz lexicographically smallest a
-      for i in [t-1,t-2..0] do
-        zi := a^(r^i);
-        min := zi;
-        minmul := 0;
-        if i=t-1 then
-          rr := r-2;
-        else
-          rr := r-1;
-        fi;
-        for j in [1..rr] do
-          zi := zi*zeta;
-          if IntFFE(zi) < IntFFE(min) then
-            min := zi;
-            minmul := j;
-          fi;
-        od;
-        a := a^(1+minmul*r^(t-1-i));
-        if i=t-1 then
-          zeta := min;
-        fi;
-      od;
-      Add(lr, [,a,F,a,t]);
-    else
-      # need to extend to minimal field with r-th roots of 1
-      m := OrderMod(p, r);
-      z := Indeterminate(F, "z");
-      cps := List(SFFHelper.GFCyclotomicPolynomials(r, p), pl-> Value(pl, z));
-      pp := [1];
-      # find and use Steinitz smallest poly in cps
-      for i in [1..m] do Add(pp, pp[i]*p); od;
-      vcps := List(cps, pl-> List(CoefficientsOfUnivariatePolynomial(pl),
-              IntFFE)*pp);
-      i := Position(vcps, Minimum(vcps));
-      cps := cps[i];
-      L := FiniteFieldTower(p, cps);
-      zc := GeneratorsOfField(L)[1];
-      q := p^m;
-      # r-valuation in q-1
-      t := 1;
-      a := (q-1)/r;
-      while a mod r = 0 do
-        t := t+1; 
-        a := a/r;
-      od;
-      if t = 1 then
-        a := zc;
-      else
-        # random primitive r^t-th root, (1-1/r) of all elements are good
-        a := Random(L);
-        zeta := a^((q-1)/r);
-        while IsOne(zeta) or IsZero(zeta) do
-          a := Random(L);
-          zeta := a^((q-1)/r);
-        od;
-        a := a^((q-1)/r^t);
-        # adjust such that zeta = zc
-        j := 1;
-        zi := zeta;
-        while zi <> zc do
-          j := j+1;
-          zi := zi*zeta;
-        od;
-        if j <> 1 then
-          a := a^j;
-          zeta := zc;
-        fi;
-        # now find the Steinitz lexicographically smallest a
-        for i in [t-2,t-3..0] do
-          zi := a^(r^i);
-          min := zi;
-          minmul := 0;
-          sn := SteinitzNumber(zi);
-          for j in [1..r-1] do
-            zi := zi*zeta;
-            snzi := SteinitzNumber(zi);
-            if snzi < sn then
-              min := zi;
-              minmul := j;
-              sn := snzi;
-            fi;
-          od;
-          a := a^(1+minmul*r^(t-1-i));
-        od;
-      fi;
-      # we remember cps in first position for reuse
-      Add(lr, [cps, a!.rep, L, a, t]);
-    fi;
-  else
-    # recursion
-    SFFHelper.rPowerStandardFFTrace(p, r, k-1);
-    L := lr[k][3];
-    a := lr[k][4];
-    t := lr[k][5];
-    v := Indeterminate(F, Concatenation("x",String(r),"_",String(k)));
-    m := OrderMod(p, r);
-    if m = 1 then
-      # easy case with r-th roots of 1 in prime field
-      lr[k+1] := [v^r-lr[k][2], v, 0, v, t+1];
-    else
-      # we now compute in L[X]/(X^r-a), represented as vectors/L
-      # c is r-th root of a
-      # the new generator cc is the trace of c in degree m subfield
-      cc := (0*a)*[1..r];
-      cc[2] := a^0;
-      for i in [1..m-1] do
-        # for q = p^(r^k) compute c^(q^i), we use c^(r^(t+1)) = 1 and c^r = a
-        e := PowerMod(p,i*r^k, r^(t+1));
-        qr := QuotientRemainder(e, r);
-        cc[qr[2]+1] := cc[qr[2]+1] + a^qr[1];
-      od;
-      # compute minimal polynomial of cc over L, will have coefficients
-      # in degree m subfield K of L
-      # [Remark: here we compute the minimal polynomial of the vector of 1
-      # Starting with a random vector needs one more multiplication,
-      # but we can take random r columns (corresp. to r elements of the
-      # K-basis to compute the minimal polynomial.
-      vec := 0*cc;
-      vec[1] := a^0;
-      st := FindLinearCombination(vec, false);
-      vec := cc;
-      st := FindLinearCombination(vec, st[1]);
-      for i in [2..r] do
-        # the powers cc^j, j = 2..r
-        vec := ProductCoeffs(vec, cc);
-        for j in [r+1..Length(vec)] do
-          vec[j-r] := vec[j-r] + vec[j]*a;
-        od;
-        vec := vec{[1..r]};
-        st := FindLinearCombination(vec, st[1]);
-      od;
-      mp := v^0;
-      for i in [r,r-1..1] do
-        mp := mp*v-PolynomialFiniteFieldTowerElement(st[2][i]);
-      od;
-      # now express c a L-linear combination of powers of cc = v
-      c := 0*vec;
-      c[2] := a^0;
-      st := FindLinearCombination(c, st[1]);
-      # extension of degree r^(k-1), the new L and the new a
-      K := PreviousFiniteFieldTower(L);
-      # shift coefficients in st[2] to larger extension
-      # was written in K[z][c], now rewritten in K[cc][z]
-      a := NullMat(m, r, K);
-      for i in [1..m] do 
-        for j in [1..r] do
-          if IsBound(st[2][j]!.rep[i]) then
-            a[i][j] := st[2][j]!.rep[i];
-          fi;
-        od;
-      od;
-      # last is stored cyclotomic polynomial
-      L := ExtendFiniteFieldTower(K, mp, lr[1][1]);
-      K := PreviousFiniteFieldTower(L);
-      a := List(a, row-> FiniteFieldTowerElement(K, row));
-      a := FiniteFieldTowerElement(L, a);
-
-      lr[k+1] := [mp, v, L, a, t+1];
-    fi;
-  fi;
-  return lr[k+1];
-end;
-
-# we cache the standard irreducible polynomials of prime degree
-# via the Steinitz number of the polynomial minus the leading term.
-SFFHelper.StandardIrreducibleCoeffListCACHE := function(L, r, a)
-  local p, k, res, v;
-  if UserPreference("StandardFFUseCache") <> true then
-    return StandardIrreducibleCoeffList(L, r, a);
-  fi;
-  if not IsBound(SFFHelper.IRRPRIMDEGCACHE) then
-    ReadPackage("StandardFF", "data/IRRPRIMDEGCACHE");
-  fi;
-  p := Characteristic(L);
-  k := LogInt(DegreeOverPrimeField(L), r);
-  if p > 10000 then
-    return StandardIrreducibleCoeffList(L, r, a);
-  fi;
-  if IsBound(SFFHelper.IRRPRIMDEGCACHE[p]) then
-    v := First(SFFHelper.IRRPRIMDEGCACHE[p], l-> l[1]=r and l[2]=k);
-    if v <> fail then
-      res := CoefficientsQadic(v[3], Size(L)); 
-      while Length(res) < r do
-        Add(res, 0);
-      od;
-      Add(res, 1);
-      return List(res, i-> ElementSteinitzNumber(L,i));
-    fi;
-  else
-    SFFHelper.IRRPRIMDEGCACHE[p] := [];
-  fi;
-  res := StandardIrreducibleCoeffList(L, r, a);
-  v := res{[1..r]};
-  v := List(v, SteinitzNumber);
-  v := ValuePol(v, Size(L));
-  Add(SFFHelper.IRRPRIMDEGCACHE[p], [r, k, v]);
-  return res;
-end;
-
-SFFHelper.rPowerStandardFFRandom := function(p, r, k)
-  local F, o, lr, pr, pn, i, b, m, a, v, L, Lst, ast, vec, mp, K;
-  F := GF(p);
-  SetIsStandardPrimeField(F, true);
-  o := One(F);
-  lr := SFFHelper.PrepareGFpForStandardFF(p, r);
-  if IsBound(lr[k+1]) then 
-    return lr[k+1];
-  fi;
-  if k = 0 then
-    if (p-1) mod r = 0 then
-      # simplest case, prime field has r-th roots of 1
-      pr := (p-1)/r;
-      pn := pr;
-      while pn mod r = 0 do
-        pn := pn/r;
-      od;
-      i := 1;
-      b := o*StandardAffineShift(p, i);
-      # if m = 1 or m = 0 then b^pn is an r-th power
-      m := b^pr;
-      while IsOne(m) or IsZero(m) do
-        i := i+1;
-        b := o*StandardAffineShift(p, i);
-        m := b^pr;
-      od;
-      # a has no r-th root in F_p
-      a := b^pn;
-      Add(lr, [,a,F,a]);
-    else
-      # we use smallest/random polynomials, here we just fix 1 as
-      # norm of next step
-      Add(lr, [, , GF(p), -One(GF(p))]);
-    fi;
-  else
-    # recursion
-    SFFHelper.rPowerStandardFFRandom(p, r, k-1);
-    v := Indeterminate(F, Concatenation("x",String(r),"_",String(k)));
-    if  (p-1) mod r = 0 then
-      # easy case with r-th roots of 1 in prime field
-      lr[k+1] := [v^r-lr[k][2], v, 0, v];
-    else
-      L := lr[k][3];
-      a := lr[k][4];
-      #if IsFiniteFieldTower(L) and IsFiniteFieldTower(L!.prev) then
-      if IsFiniteFieldTower(L) then
-        # go to simple extension for efficiency
-        Lst := StandardFiniteField(p, r^(k-1));
-        ast := ElementSteinitzNumber(Lst, SteinitzNumber(a));
-        #vec := StandardIrreducibleCoeffList(Lst, r, ast);
-        vec := SFFHelper.StandardIrreducibleCoeffListCACHE(Lst, r, ast);
-        vec := List(vec, c-> ElementSteinitzNumber(L, SteinitzNumber(Lst,c)));
-      else
-        #vec := StandardIrreducibleCoeffList(L, r, a);
-        vec := SFFHelper.StandardIrreducibleCoeffListCACHE(L, r, a);
-      fi;
-      mp := v^0;
-      for i in [r,r-1..1] do
-        mp := mp*v+PolynomialFiniteFieldTowerElement(vec[i]);
-      od;
-      K := ExtendFiniteFieldTower(L, mp);
-      lr[k+1] := [mp, v, K, -ElementSteinitzNumber(K, Size(L))];
-    fi;
-  fi;
-  return lr[k+1];
-end;
-#MakeImmutable(SFFHelper);
-
-##  <#GAPDoc Label="FF">
-##  <ManSection>
-##  <Heading>Constructing standard finite fields</Heading>
-##  <Func Name="StandardFiniteField" Arg="p, n"/>
-##  <Func Name="FF" Arg="p, n"/>
-##  <Returns>a finite field</Returns>
-##  <Func Name="StandardFiniteFieldTower" Arg="p, n"/>
-##  <Returns>a tower of finite fields</Returns>
-##  <Attr Name="Tower" Arg="F"/>
-##  <Returns>a tower of finite fields</Returns>
-##  <Func Name="StandardPrimeDegreePolynomial" Arg="p, r, k" />
-##  <Returns>a polynomial of degree <A>r</A></Returns>
-##  <Description>
-##  The   arguments   are   a   prime  <A>p</A>   and   a   positive   integer
-##  <A>n</A>.   The   function  <Ref   Func="FF"/>   (or   its  synomym   <Ref
-##  Func="StandardFiniteField"/>)  is  one  of  the  main  functions  of  this
-##  package.   It   returns   a   standardized   field   <C>F</C>   of   order
-##  <M><A>p</A>^{<A>n</A>}</M>.  It   is  implemented  as  a   simple  extension
-##  over  the   prime  field  <C>GF(p)</C>  using   <Ref  BookName="Reference"
-##  Oper="AlgebraicExtension" />
-##  <P/> 
-##  The  underlying  tower of  finite  fields  can  be constructed  with  <Ref
-##  Func="StandardFiniteFieldTower" /> or it can  be accessed from <C>F</C> by
-##  <Ref Attr="Tower" />.
-##  <P/>
-##  The   polynomials    used   for   the   prime    degree   extensions   are
-##  accessible    with   <Ref    Func="StandardPrimeDegreePolynomial"/>.   For
-##  arguments  <A>p,  r,  k</A>  it  returns  the  irreducible  polynomial  of
-##  degree  <A>r</A>   for  the  <A>k</A>-th  iterated   extension  of  degree
-##  <A>r</A>  over  the  prime  field.  The  polynomial  is  in  the  variable
-##  <C>x</C><Emph>r</Emph><C>_</C><Emph>k</Emph>  and   the  coefficients  can
-##  contain  variables <C>x</C><Emph>r</Emph><C>_</C><Emph>l</Emph>  with <M>l
-##  &lt; k</M>.
-##  <P/>
-##  REMARK:  Note that  in this  version of  the <Package>StandardFF</Package>
-##  package  the  fields returned  by  <Ref  Func="FF"/>  are not  cached  (in
-##  contrast  to the  &GAP; function  <Ref BookName="Reference"  Func="GF"/>).
-##  Furthermore, currently the package  only supports arithmetic operations of
-##  elements in the same field (and  the prime field, for convenience). To add
-##  or  multiply elements  in  different  extensions of  the  prime field  use
-##  explicit embeddings (see <Ref  Meth="Embedding" Label="for standard finite
-##  fields"/>).
-##  <Example>gap> Fp := FF(2, 1);
-##  GF(2)
-##  gap> F := FF(2, 100);
-##  FF(2, 100)
-##  gap> StandardFiniteFieldTower(2, 100);
-##  FFTower(2;2,2,5,5)
-##  gap> T := Tower(F);
-##  FFTower(2;2,2,5,5)
-##  gap> Size(F);
-##  1267650600228229401496703205376
-##  gap> Size(F) = Size(T);
-##  true
-##  gap> p := NextPrimeInt(10^50);
-##  100000000000000000000000000000000000000000000000151
-##  gap> K := FF(p, 60);
-##  FF(100000000000000000000000000000000000000000000000151, 60)
-##  gap> LogInt(Size(K), 10);
-##  3000
-##  gap> F := FF(13, 9*5);
-##  FF(13, 45)
-##  gap> StandardPrimeDegreePolynomial(13, 3, 1);
-##  x3_1^3+Z(13)^10
-##  gap> StandardPrimeDegreePolynomial(13, 3, 2);
-##  x3_2^3-x3_1
-##  gap> StandardPrimeDegreePolynomial(13, 5, 1);
-##  x5_1^5+Z(13)^3*x5_1-Z(13)^0
-##  </Example>
-##  </Description>
-##  </ManSection>
-##  <#/GAPDoc>
-##  
-InstallGlobalFunction(StandardPrimeDegreePolynomial, 
-function(p, r, k, variant...)
-  if not IsPrimeInt(p) then
-    Error("StandardPrimeDegreePolynomial: characteristic p must be a prime.");
-  elif not IsPrimeInt(r) then
-    Error("StandardPrimeDegreePolynomial: r must be a prime.");
-  fi;
-  if p = r then
-    return SFFHelper.ArtinSchreierStandardFF(p, k)[1];
-  elif 2 = r then
-    return SFFHelper.2PowerStandardFF(p, k)[1];
-  else
-    if "Trace" in variant then
-      return SFFHelper.rPowerStandardFFTrace(p, r, k)[1];
-    else
-      return SFFHelper.rPowerStandardFFRandom(p, r, k)[1];
-    fi;
-  fi;
-end);
-
-InstallGlobalFunction(StandardFiniteFieldTower, function(p, n, variant...)
-  local pl, f, pols, res, primposs, a, i;
-  if n=1 then 
-    res := GF(p);
-    SetIsStandardPrimeField(res, true);
-    return res; 
-  fi;
-  if "Trace" in variant then
-    pl := true;
-  else
-    pl := false;
-  fi;
-  f := Collected(FactorsInt(n));
-  pols := [];
-  for a in f do
-    for i in [1..a[2]] do
-      if pl then
-        Add(pols, StandardPrimeDegreePolynomial(p, a[1], i, "Trace"));
-      else
-        Add(pols, StandardPrimeDegreePolynomial(p, a[1], i));
-      fi;
-    od;
-  od;
-  res := FiniteFieldTower(p, pols);
-  primposs := [f[1][2]];
-  for i in [2..Length(f)] do
-    Add(primposs, primposs[i-1]+f[i][2]);
-  od;
-  res!.primposs := primposs;
-  if not pl then
-    SetFilterObj(res, IsStandardFiniteFieldTower);
-  fi;
-  SetLeftActingDomain(res, FF(p,1));
-  return res;
-end);
-
-# standardized primitive element is product of last prime power generators
-InstallMethod(PrimitiveElement, ["IsStandardFiniteFieldTower"], function(L)
-  local gen;
-  gen := GeneratorsOfField(L);
-## Would also work:   return Sum(gen{L!.primposs});
-  return Product(gen{L!.primposs});
-end);
-
-# caching minimal polynomials of primitive elements
-# (as Steinitz number of poly minus leading term)
-SFFHelper.MinimalPolynomialCACHE := function(Fp, xmat, iv)
-  local p, n, res, c;
-  if UserPreference("StandardFFUseCache") <> true then
-    return MinimalPolynomial(Fp, xmat, iv);
-  fi;
-  if not IsBound(SFFHelper.MIPOPRIMCACHE) then
-    ReadPackage("StandardFF", "data/MIPOPRIMCACHE");
-  fi;
-  p := Characteristic(Fp);
-  n := Length(xmat);
-  if p < 10000 then
-    if IsBound(SFFHelper.MIPOPRIMCACHE[p]) and 
-                   IsBound(SFFHelper.MIPOPRIMCACHE[p][n]) then 
-      if IsInt(iv) then
-        iv := Indeterminate(Fp, iv);
-      fi;
-      res := CoefficientsQadic(SFFHelper.MIPOPRIMCACHE[p][n], p);
-      while Length(res) < n do
-        Add(res, 0);
-      od;
-      Add(res, 1);
-      return ValuePol(One(Fp)*res, iv);
-    fi;
-  fi;
-  res := MinimalPolynomial(Fp, xmat, iv);
-  if p < 10000 then
-    c := List(CoefficientsOfUnivariatePolynomial(res), IntFFE);
-    Remove(c);
-    while c[Length(c)] = 0 do
-      Remove(c);
-    od;
-    c := ValuePol(c, p);
-    if not IsBound(SFFHelper.MIPOPRIMCACHE[p]) then
-      SFFHelper.MIPOPRIMCACHE[p] := [];
-    fi;
-    SFFHelper.MIPOPRIMCACHE[p][n] := c;
-  fi;
-  return res;
-end;
-
-
-# some utilities for monomials of tower basis
-TowerMon.MonomialsTowerBasis := function(T)
-  local K, v, prev, l, li, i;
-  K := BaseFiniteFieldTower(T);
-  v := Indeterminate(K, T!.var);
-  prev := PreviousFiniteFieldTower(T);
-  if not IsFiniteFieldTower(prev) then
-    l := [v^0, v];
-    for i in [2..T!.deg-1] do
-      Add(l, l[i]*v);
-    od;
-    return l;
-  fi;
-  li := TowerMon.MonomialsTowerBasis(prev);
-  l := ShallowCopy(li);
-  for i in [1..T!.deg-1] do
-    li := v*li;
-    Append(l, li);
-  od;
-  return l;
-end;
-TowerMon.PolysTower := function(T)
-  if not IsFiniteFieldTower(T) then
-    return [];
-  fi;
-  return Concatenation([T!.poly], 
-                        TowerMon.PolysTower(PreviousFiniteFieldTower(T)));
-end;
-TowerMon.VarsTower := function(T)
-  if not IsFiniteFieldTower(T) then
-    return [];
-  fi;
-  return Concatenation([T!.var], 
-                        TowerMon.VarsTower(PreviousFiniteFieldTower(T)));
-end;
-TowerMon.MonOrdTower := function(T)
-  return CallFuncList(MonomialLexOrdering, TowerMon.VarsTower(T));
-end;
-TowerMon.DegsTower := function(T)
-  local prev, d;
-  prev := PreviousFiniteFieldTower(T);
-  if not IsFiniteFieldTower(prev) then
-    return [1];
-  fi;
-  d := TowerMon.DegsTower(prev);
-  return Concatenation([d[1]*prev!.deg], d);
-end;
-
-TowerMon.SparseActionPrimEltTowerBasis := function(T)
-  local xp, mtb, emtb, polys, monord, o, degs, res, c, ec, poss, coeffs, i, b;
-  xp := PolynomialFiniteFieldTowerElement(PrimitiveElement(T));
-  mtb := TowerMon.MonomialsTowerBasis(T);
-  emtb := List(mtb, b-> ExtRepPolynomialRatFun(b)[1]);
-  polys := TowerMon.PolysTower(T);
-  monord := TowerMon.MonOrdTower(T);
-  o := One(BaseFiniteFieldTower(T));
-  degs := TowerMon.DegsTower(T);
-  res := [];
-  for b in mtb do
-    c := PolynomialReducedRemainder(xp*b, polys, monord);
-    ec := ExtRepPolynomialRatFun(c);
-    poss := [];
-    coeffs := [];
-    i := 1;
-    for i in [1..Length(ec)/2] do
-      Add(poss, Position(emtb, ec[2*i-1]));
-      Add(coeffs, ec[2*i]);
-    od;
-    Add(res, [poss, coeffs]);
-  od;
-  return res;
-end;
-TowerMon.MultVecSparse := function(v, sp)
-  local res, c, a, a1, i;
-  res := 0*ShallowCopy(v);
-  for i in [1..Length(v)] do
-    c := v[i];
-    if not IsZero(c) then
-      a := sp[i];
-      a1 := a[1];
-      if Length(a1) = 1 then
-        res[a1[1]] := res[a1[1]] + c*a[2][1];
-      else
-        res{a[1]} := res{a[1]} + c*a[2];
-      fi;
-    fi;
-  od;
-  return res;
-end;
-# the main function, which uses all the others:
-# - computes sparse action of primitive element x of tower on
-#   tower basis
-# - its minimal polynomial via Berlekamp-Massey
-# - returns [matrix of x-powers on tower basis, minimal polynomial]
-TowerMon.MinPolPrimEltTower := function(T, vnr)
-  local sp, len, K, z, o, v, xp, u, res, i;
-  sp := TowerMon.SparseActionPrimEltTowerBasis(T);
-  len := Length(sp);
-  K := BaseFiniteFieldTower(T);
-  z := Zero(K);
-  o := One(K);
-  v := z*[1..len];
-  v[1] := o;
-  xp := [v];
-  u := [v[1]];
-  for i in [2..2*len] do
-    v := TowerMon.MultVecSparse(v, sp);
-    Add(u, v[1]);
-    if Length(xp) < len then
-      Add(xp, v);
-    fi;
-  od;
-  res := -Reversed(BerlekampMassey(u));
-  Add(res, o);
-  ConvertToVectorRep(res);
-  ConvertToMatrixRep(xp, K);
-  return [xp, UnivariatePolynomial(K,res,vnr)];
-end;
-
-
 # default for other fields
 InstallOtherMethod(IsStandardFiniteField, ["IsField"], ReturnFalse);
 
@@ -1061,24 +315,13 @@ InstallOtherMethod(IsStandardFiniteField, ["IsField"], ReturnFalse);
 InstallMethod(TowerBasis, ["IsStandardFiniteField"], function(F)
   return PrimitivePowersInTowerBasis(F)^-1;
 end);
-# list of degrees of the monomials in tower basis
-InstallMethod(TowerBasisMap, ["IsStandardFiniteField"], function(F)
-  return StdMon(DegreeOverPrimeField(F))[2];
-end);
-InstallOtherMethod(TowerBasisMap, ["IsStandardFiniteFieldTower"], function(F)
-  return StdMon(DegreeOverPrimeField(F))[2];
-end);
 
+# elements as coefficient vectors in tower basis
 InstallMethod(AsVector, ["IsStandardFiniteFieldElement"], function(x)
   local F;
   F := FamilyObj(x)!.wholeField;
   return ExtRepOfObj(x) * PrimitivePowersInTowerBasis(F);
 end);
-
-InstallMethod(AsPolynomial, ["IsStandardFiniteFieldElement"], function(x)
-  return PolynomialFiniteFieldTowerElement(ToTowerElement(DefaultField(x), x));
-end);
-InstallOtherMethod(AsPolynomial, ["IsFFE"], IdFunc);
 
 InstallOtherMethod(AsVector, 
     ["IsStandardFiniteField", "IsStandardFiniteFieldElement"], 
@@ -1086,16 +329,77 @@ function(F, x)
   return ExtRepOfObj(x) * PrimitivePowersInTowerBasis(F);
 end);
 
-InstallMethod(ToTowerElement, 
-     ["IsStandardFiniteField", "IsStandardFiniteFieldElement"],
-function(F, c)
-  return FiniteFieldTowerElementVector(Tower(F), AsVector(F, c));
+# elements as polynomials
+InstallMethod(GeneratorMonomials, [IsStandardFiniteField], 
+function(F)
+  local res, d, f, Fp, s, a, i, v;
+  res := rec(vars := []);
+  d := DegreeOverPrimeField(F);
+  if d = 1 then
+    return res;
+  fi;
+  f := Collected(Factors(d));
+  Fp := PrimeField(F);
+  for a in f do
+    res.(a[1]) := rec();
+    for i in [1..a[2]] do
+      s := Concatenation("x",String(a[1]),"_",String(i));
+      v := Indeterminate(Fp, s);
+      res.(a[1]).(i) := v;
+      Add(res.vars, v);
+    od;
+  od;
+  return res;
+end);
+InstallMethod(TowerBasisMonomials, [IsStandardFiniteField],
+function(F)
+  local d, m, l, o, res, b, i, a;
+  d := DegreeOverPrimeField(F);
+  m := GeneratorMonomials(F);
+  l := StdMon(d)[1];
+  o := One(PrimeField(F));
+  res := [];
+  for a in l do
+    b := o;
+    i := 1;
+    while i < Length(a) do
+      b := b*m.(a[i]).(a[i+1])^a[i+2];
+      i := i+3;
+    od;
+    Add(res, b);
+  od;
+  return res;
+end);
+InstallOtherMethod(AsPolynomial, ["IsFFE"], IdFunc);
+InstallMethod(AsPolynomial, ["IsStandardFiniteFieldElement"],
+function(x)
+  local F;
+  F := FamilyObj(x)!.wholeField;
+  return AsVector(x) * TowerBasisMonomials(F);
+end);
+# vice versa, we also support non-reduced polynomials
+InstallMethod(ElementPolynomial, [IsStandardFiniteField, IsPolynomial],
+function(F, pol)
+  local gm, tbm, poss, a, tb, res;
+  gm := GeneratorMonomials(F);
+  if not IsBound(F!.gmeltvars) then
+    tbm := TowerBasisMonomials(F);
+    poss := List(gm.vars, x-> Position(tbm, x));
+    a := PrimitiveElement(F);
+    tb := TowerBasis(F);
+    F!.gmeltvars := List(poss, i-> ValuePol(tb[i], a)); 
+  fi;
+  res := Value(pol, gm.vars, F!.gmeltvars);
+  if not res in F then
+    return fail;
+  fi;
+  return res;
 end);
 
-InstallOtherMethod(ToTowerElement, ["IsStandardPrimeField", "IsFFE"],
-function(F, c)
-  return c;
-end);
+
+# miscellaneous utilities
+InstallMethod(PrimeField, ["IsStandardFiniteField"], 
+  F -> FF(Characteristic(F), 1));
 
 
 ##  <#GAPDoc Label="IsFF">
@@ -1104,7 +408,6 @@ end);
 ##  <Prop Name="IsStandardPrimeField" Arg="F" />
 ##  <Prop Name="IsStandardFiniteField" Arg="F" />
 ##  <Filt Name="IsStandardFiniteFieldElement" Arg="x" Type="Category"/>
-##  <Filt Name="IsStandardFiniteFieldTower" Arg="T" Type="Category"/>
 ##  <Returns><K>true</K> or <K>false</K> </Returns>
 ##  <Description>
 ##  These  properties  identify  the   finite  fields  constructed  with  <Ref
@@ -1117,9 +420,6 @@ end);
 ##  have the property <Ref Prop="IsStandardFiniteField"/>. Elements <A>x</A> in
 ##  such a field are in <Ref Filt="IsStandardFiniteFieldElement"/>.
 ##  <P/>
-##  And  fields   constructed  by   <C>StandardFiniteFieldTower(p,k)</C>  with
-##  <C>k</C> <M>&gt; 1</M> (that is proper extensions of the prime field) have
-##  the property <Ref Prop="IsStandardFiniteFieldTower"/>.
 ##  <Example>gap> F := FF(19,1);
 ##  GF(19)
 ##  gap> IsStandardFiniteField(F);
@@ -1131,12 +431,6 @@ end);
 ##  gap> IsStandardFiniteField(F);
 ##  true
 ##  gap> IsStandardFiniteFieldElement(Random(F));
-##  true
-##  gap> IsStandardFiniteField(Tower(F));
-##  false
-##  gap> IsStandardFiniteFieldTower(Tower(F));
-##  true
-##  gap> IsStandardFiniteFieldTower(StandardFiniteFieldTower(11,2));
 ##  true
 ##  </Example>
 ##  </Description>
@@ -1157,18 +451,10 @@ InstallOtherMethod(IsStandardPrimeField, ["IsField"], function(K)
   fi;
   return false;
 end);
-InstallOtherMethod(FromTowerElement, ["IsStandardPrimeField", "IsInt"],
-function(F, nr)
-  return nr*One(F);
-end);
 
 ##  <#GAPDoc Label="FFElmConv">
 ##  <ManSection>
 ##  <Heading>Maps for elements of standard finite fields</Heading>
-##  <Oper Name="ToTowerElement" Arg="F, a"/>
-##  <Returns>an element in <C>Tower(F)</C> </Returns>
-##  <Oper Name="FromTowerElement" Arg="F, t"/>
-##  <Returns>an element in <C>F</C> </Returns>
 ##  <Meth Name="AsVector" Label="for elements in standard finite fields"
 ##  Arg="a"/>
 ##  <Returns>a vector over prime field of <C>F</C> </Returns>
@@ -1176,49 +462,38 @@ end);
 ##  <Returns>an element in <C>F</C> </Returns>
 ##  <Meth Name="AsPolynomial" Label="for elements in standard finite fields"
 ##  Arg="a"/>
-##  <Returns>a polynomial in variables of <C>Tower(F)</C> </Returns>
+##  <Returns>a polynomial in variables of the tower of <C>F</C> </Returns>
 ##  <Meth Name="ElementPolynomial" Arg="F, pol"/>
 ##  <Returns>an element in <C>F</C> </Returns>
-##  <Meth Name="SteinitzNumber" Label="for standard finite field elements"
-##   Arg="a"/>
+##  <Meth Name="SteinitzNumber" Arg="a"/>
 ##  <Returns>an integer</Returns>
-##  <Meth Name="ElementSteinitzNumber" Label="for standard finite fields" 
-##  Arg="F, nr"/>
+##  <Meth Name="ElementSteinitzNumber" Arg="F, nr"/>
 ##  <Returns>an element in <C>F</C></Returns>
 ##  <Description>
 ##  Here,    <A>F</A>   is    always   a    standard   finite    field   (<Ref
-##  Filt="IsStandardFiniteField"/>), <A>a</A>  is an  element of  <A>F</A> and
-##  <A>t</A> is an element of <C>Tower(<A>F</A>)</C>.
+##  Filt="IsStandardFiniteField"/>) and <A>a</A>  is an  element of  <A>F</A>.
 ##  <P/> 
-##  Then    <Ref   Oper="ToTowerElement"    />   returns   the   element    in
-##  <C>Tower(<A>F</A>)</C>    corresponding    to     <A>a</A>,    and    <Ref
-##  Oper="FromTowerElement" /> does the inverse.
+##  <Ref Meth="AsVector" Label="for elements  in standard finite fields"/>
+##  returns the coefficient  vector of <A>a</A> with respect  to the tower
+##  basis of <A>F</A>. And  vice versa <Ref Meth="ElementVector"/> returns
+##  the element of <A>F</A> with the given coefficient vector.
 ##  <P/>
-##  <Ref  Meth="AsVector" Label="for  elements  in  standard finite  fields"/>
-##  returns the coefficient vector of <A>a</A> with respect to the tower basis
-##  of  <C>Tower(<A>F</A>)</C>. And  <Ref  Meth="ElementVector"/> returns  the
-##  element of <A>F</A> with the given coefficient vector.
+##  Similarly,  <Ref Meth="AsPolynomial"  Label="for elements  in standard
+##  finite   fields"/>   returns   the   (reduced)   polynomial   in   the
+##  indeterminates defining  the tower of  <A>F</A>. Here, for  each prime
+##  <M>r</M> dividing the degree of  the field the polynomial defining the
+##  <M>k</M>-th  extension of  degree  <M>r</M> over  the  prime field  is
+##  written  in the  variable  <C>x</C><M>r</M><C>_</C><M>k</M>. And  <Ref
+##  Meth="ElementPolynomial"/> returns the element of <A>F</A> represented
+##  by the given polynomial (which does not need to be reduced).
 ##  <P/>
-##  Similarly, <Ref Meth="AsPolynomial" Label="for elements in standard finite
-##  fields"/> returns the (reduced)  polynomial in the indeterminates defining
-##  <C>Tower(<A>F</A>)</C>  representing  <C>ToTower(<A>F</A>,  <A>a</A>)</C>.
-##  And  <Ref  Meth="ElementPolynomial"/>  returns  the  element  of  <A>F</A>
-##  represented by the given polynomial (which does not need to be reduced).
-##  <P/>
-##  Finally,    <Ref    Meth="SteinitzNumber"/>     returns    the    Steinitz
-##  number     of     <C>ToTower(<A>F</A>,     <A>a</A>)</C>.     And     <Ref
-##  Meth="ElementSteinitzNumber"/>  returns the  element  with given  Steinitz
-##  number.
+##  Finally, <Ref  Meth="SteinitzNumber"/> returns the Steinitz  number of
+##  <A>a</A>. And <Ref  Meth="ElementSteinitzNumber"/> returns the element
+##  with given Steinitz number.
 ##  <Example><![CDATA[gap> F := FF(17, 12);
 ##  FF(17, 12)
-##  gap> T := Tower(F);
-##  FFTower(17;2,2,3)
 ##  gap> a := PrimitiveElement(F);; a := a^11-3*a^5+a;
-##  x12^11+Z(17)^9*x12^5+x12
-##  gap> t := ToTowerElement(F, a);
-##  <FFTower(17;2,2,3):[ 0, 0, 11, 10, 0, 0, 16, 4, 0, 0, 16, 13 ]>
-##  gap> a^12345 = FromTowerElement(F, t^12345);
-##  true
+##  ZZ(17,12,[0,1,0,0,0,14,0,0,0,0,0,1])
 ##  gap> v := AsVector(a);
 ##  < mutable compressed vector length 12 over GF(17) >
 ##  gap> a = ElementVector(F, v);
@@ -1229,17 +504,14 @@ end);
 ##  gap> ElementPolynomial(F, pol^10) = a^10;
 ##  true
 ##  gap> nr := SteinitzNumber(a);
-##  477792582014518
+##  163301081752089
 ##  gap> a = ElementSteinitzNumber(F, nr);
 ##  true
-##  gap> rgens := GeneratorsOfField(T); # generators of prime degree steps
-##  [ <FFTower(17;2,2,3):[ 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]>, 
-##    <FFTower(17;2,2,3):[ 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]>, 
-##    <FFTower(17;2,2,3):[ 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 ]> ]
-##  gap> FromTowerElement(F, rgens[2]*rgens[3]) = PrimitiveElement(F);
-##  true
 ##  gap> ## primitive element of FF(17, 6)
-##  gap> y := FromTowerElement(F, rgens[1] * rgens[3]);;
+##  gap> y := ElementSteinitzNumber(F, 17^5);
+##  ZZ(17,12,[0,0,13,0,0,0,5,0,0,0,10,0])
+##  gap> y = ValuePol([0,0,13,0,0,0,5,0,0,0,10,0], PrimitiveElement(F));
+##  true
 ##  gap> x6 := Indeterminate(FF(17,1), "x6");;
 ##  gap> MinimalPolynomial(FF(17,1), y, x6) = DefiningPolynomial(FF(17,6));
 ##  true
@@ -1258,15 +530,8 @@ function(F, vec)
   fi;
   return ObjByExtRep(fam, l);
 end);
-InstallMethod(FromTowerElement, ["IsStandardFiniteField", "IsRingElement"],
-function(F, tc)
-  return ElementVector(F, AsVector(tc));
-end);
-InstallMethod(ElementPolynomial, ["IsStandardFiniteField", "IsPolynomial"],
-function(F, pol)
-  return FromTowerElement(F, FiniteFieldTowerElement(Tower(F), pol));
-end);
 
+InstallOtherMethod(SteinitzNumber, ["IsFFE"], IntFFE);
 InstallOtherMethod(SteinitzNumber, 
                ["IsStandardPrimeField", "IsRingElement"],
 function(F, c)
@@ -1322,42 +587,6 @@ InstallMethod(PrintString, ["IsStandardFiniteField"], ViewString);
 InstallMethod(PrintObj, ["IsStandardFiniteField"], function(F)
   Print(PrintString(F));
 end);
-InstallMethod(ViewString, ["IsStandardFiniteFieldTower"], function(F)
-  local res;
-  if not IsFiniteFieldTower(F!.prev) then
-    return Concatenation("FFTower(", String(Size(F!.prev)),
-                                ";",String(F!.deg),")");
-  fi;
-  res := Concatenation("FF", ViewString(F!.prev));
-  Remove(res);
-  Append(res,",");
-  Append(res, String(F!.deg));
-  Append(res,")");
-  return res;
-end);
-
-##  InstallMethod(PrimitivePowersInTowerBasis, ["IsStandardFiniteField"],
-##  function(F)
-##    local K, p, x, tdeg, z, xpowers, vec, i;
-##    K := Tower(F);
-##    p := Characteristic(K);
-##    x := PrimitiveElement(K);
-##    tdeg := DegreeOverPrimeField(K);
-##    z := Zero(GF(p));
-##    xpowers := [One(K)];
-##    for i in [1..tdeg-1] do
-##      Add(xpowers, xpowers[i]*x);
-##    od;
-##    for i in [1..tdeg] do
-##      vec := AsVector(xpowers[i]);
-##      while Length(vec) < K!.deg do
-##        Add(vec, z);
-##      od;
-##      xpowers[i] := vec;
-##    od;
-##    ConvertToMatrixRep(xpowers, p);
-##    return xpowers;
-##  end);
 
 # helper: describe monomials in tower basis and their degrees
 InstallGlobalFunction(StdMon, function(n)
@@ -1493,7 +722,7 @@ end);
 ##  
 InstallMethod(Embedding, ["IsStandardFiniteField", "IsStandardFiniteField"],
 function(K, L)
-  local p, d, a, monK, monL, map, z, famL, famK, fun, pre, emb;
+  local p, d, a, monK, monL, map, z, famL, famK, fun, imgen, fun2, pre, emb;
   p := Characteristic(K);
   if Characteristic(L) <> p then
     Error("different characteristic");
@@ -1526,6 +755,16 @@ function(K, L)
     fi;
     return ObjByExtRep(famL, l);
   end;
+##  # Maybe this version of "fun" can be made faster?  
+##    imgen := fun(PrimitiveElement(K));
+##    fun2 := function(x)
+##      local c;
+##      c := x![1];
+##      if not IsList(c) then
+##        return c*One(L);
+##      fi;
+##      return ValuePol(c, imgen);
+##    end;
   pre := function(y)
     local v, l;
     v := AsVector(L, y);
@@ -1563,38 +802,31 @@ end);
 ##  <Meth Name="SteinitzNumber" Label="for Steinitz pair" Arg="K, pair"/>
 ##  <Returns>an integer</Returns>
 ##  <Description>
-##  The    argument     <A>a</A>    must    be    an     element    in    <Ref
-##  Filt="IsStandardFiniteFieldElement"/> or  an element in a  standard finite
-##  field tower. Then <Ref Oper="SteinitzPair"/> returns a pair <C>[d, nr]</C>
-##  where <C>d</C>  is the degree  of <A>a</A>  over the prime  field <C>FF(p,
-##  1)</C>  and <C>nr</C>  is the  Steinitz number  of <A>a</A>  considered as
-##  element of <C>FF(p, d)</C>.
+##  The    argument    <A>a</A>    must    be    an    element    in    <Ref
+##  Filt="IsStandardFiniteFieldElement"/>.  Then <Ref  Oper="SteinitzPair"/>
+##  returns a pair  <C>[d, nr]</C> where <C>d</C> is the  degree of <A>a</A>
+##  over  the prime  field <C>FF(p,  1)</C>  and <C>nr</C>  is the  Steinitz
+##  number of <A>a</A> considered as element of <C>FF(p, d)</C>.
 ##  <P/>
-##  In the  second variant a  standard finite field  or its tower  <A>K</A> is
-##  given and the Steinitz number of an  element in <A>K</A> and the result is
-##  the Steinitz pair of the corresponding element.
+##  In the second variant a standard  finite field <A>K</A> is given and the
+##  Steinitz number of an element in <A>K</A> and the result is the Steinitz
+##  pair of the corresponding element.
 ##  <P/>
-##  The inverse  map is  provided by a  method for  <Ref Meth="SteinitzNumber"
-##  Label="for  Steinitz pair"/>  which gets  a standard  finite field  or its
-##  tower and a Steinitz pair.
+##  The inverse map  is provided by a method  for <Ref Meth="SteinitzNumber"
+##  Label="for Steinitz  pair"/> which  gets a standard  finite field  and a
+##  Steinitz pair.
 ##  <Example>gap> F := FF(7, 360);
 ##  FF(7, 360)
-##  gap> T := Tower(F);
-##  FFTower(7;2,2,2,3,3,5)
-##  gap> rgen := GeneratorsOfField(T);;
-##  gap> t := rgen[2] * rgen[4];; # prim. elt of FF(7,12)
+##  gap> t := ElementSteinitzNumber(F, 7^10);; # prim. elt of FF(7,12)
 ##  gap> sp := SteinitzPair(t);
 ##  [ 12, 117649 ]
-##  gap> a := FromTowerElement(F, t);;
 ##  gap> H := FF(7, 12);
 ##  FF(7, 12)
-##  gap> ElementSteinitzNumber(H, 117649);
-##  x12
 ##  gap> b := ElementSteinitzNumber(H, 117649);
 ##  x12
-##  gap> Value(MinimalPolynomial(FF(7,1), a), b);
+##  gap> Value(MinimalPolynomial(FF(7,1), t), b);
 ##  !0*Z(7)
-##  gap> nr := SteinitzNumber(a);
+##  gap> nr := SteinitzNumber(t);
 ##  282475249
 ##  gap> nr = SteinitzNumber(F, sp);
 ##  true
@@ -1610,7 +842,7 @@ BindGlobal("StPairIntVec", function(K, v)
   local p, d, map, ind, sd, vv;
   p := Characteristic(K);
   d := DegreeOverPrimeField(K);
-  map := TowerBasisMap(K);
+  map := StdMonDegs(d);
   ind := Filtered([1..d], i-> IsBound(v[i]) and not IsZero(v[i]));
   if Length(ind) = 0 then
     return [1,0];
@@ -1628,9 +860,6 @@ GAPInfo.tmpmeth := function(F, x)
 end;
 InstallOtherMethod(SteinitzPair, 
     ["IsStandardFiniteField", "IsStandardFiniteFieldElement"], GAPInfo.tmpmeth);
-InstallOtherMethod(SteinitzPair, 
-    ["IsStandardFiniteFieldTower", "IsFiniteFieldTowerElement"], 
-    GAPInfo.tmpmeth);
 Unbind(GAPInfo.tmpmeth);
 InstallOtherMethod(SteinitzPair, ["IsStandardPrimeField", "IsFFE"], 
 function(F, x)
@@ -1645,8 +874,6 @@ GAPInfo.tmpmeth := function(F, nr)
 end;
 InstallOtherMethod(SteinitzPair, 
     ["IsStandardFiniteField", "IsInt"], GAPInfo.tmpmeth);
-InstallOtherMethod(SteinitzPair, 
-    ["IsStandardFiniteFieldTower", "IsInt"], GAPInfo.tmpmeth);
 Unbind(GAPInfo.tmpmeth);
 InstallOtherMethod(SteinitzPair, ["IsStandardPrimeField", "IsInt"], 
 function(F, nr)
@@ -1656,14 +883,6 @@ end);
 InstallMethod(SteinitzPair, ["IsStandardFiniteFieldElement"], 
 function(x)
   return SteinitzPair(FamilyObj(x)!.wholeField, x);
-end);
-InstallMethod(SteinitzPair, ["IsFiniteFieldTowerElement"], 
-function(x)
-  if not IsStandardFiniteFieldTower(x!.field) then
-    Error("Use SteinitzPair only for standard finite fields");
-    return fail;
-  fi;
-  return SteinitzPair(x!.field, x);
 end);
 # works only for prime fields
 InstallOtherMethod(SteinitzPair, ["IsStandardPrimeField","IsFFE"], 
@@ -1680,7 +899,7 @@ function(K, st)
     return st[2];
   fi;
   v := CoefficientsQadic(st[2], p);
-  map := TowerBasisMap(K);
+  map := StdMonDegs(d);
   # indices of subsequence of tower basis of subfield
   ind := Filtered([1..d], i-> st[1] mod map[i] = 0);
   if Length(ind) > Length(v) then
@@ -1691,8 +910,6 @@ function(K, st)
   return ValuePol(vv, p);
 end;
 InstallOtherMethod(SteinitzNumber, ["IsStandardFiniteField", "IsList"],
-GAPInfo.tmp);
-InstallOtherMethod(SteinitzNumber, ["IsStandardFiniteFieldTower", "IsList"],
 GAPInfo.tmp);
 InstallOtherMethod(SteinitzNumber, ["IsStandardPrimeField", "IsList"],
 function(K, pair)
@@ -1714,6 +931,8 @@ end);
 ##  of  the Conway  polynomial in  <A>F</A> with  the smallest Steinitz number
 ##  which is compatible with the choice in all proper subfields).
 ##  <P/> 
+##  This is used to construct the
+##  <Ref Func="StandardIsomorphismGF"/> for <A>F</A>.
 ##  <Example>gap> F := FF(23,18);
 ##  FF(23, 18)
 ##  gap> st := SteinitzPairConwayGenerator(F);
@@ -1782,9 +1001,11 @@ end);
 ##  <Func Name="StandardIsomorphismGF" Arg="F" />
 ##  <Returns>a field isomorphism </Returns>
 ##  <Description>
-##  The argument <A>F</A> must be  a standard finite field, say <C>FF(p,n)</C>
-##  such  that &GAP;  can generate  <C>GF(p,n)</C>. This  function returns  an
-##  isomorphism of fields from <C>GF(p,n)</C> to <A>F</A>.
+##  The   argument  <A>F</A>   must  be   a  standard   finite  field,   say
+##  <C>FF(p,n)</C>  such  that  &GAP;   can  generate  <C>GF(p,n)</C>.  This
+##  function returns the field  isomorphism from <C>GF(p,n)</C> to <A>F</A>,
+##  which sends <C>Z(p,n)</C> to the  element with Steinitz pair computed by
+##  <Ref Func="SteinitzPairConwayGenerator" />.
 ##  <P/> 
 ##  <Example>gap> F := FF(13,21);
 ##  FF(13, 21)
@@ -1845,3 +1066,117 @@ function(L)
   L!.isocache := emb;
   return emb;
 end);
+
+# creating finite field elements
+InstallMethod(ZZ, ["IsPosInt", "IsPosInt", "IsList"], 
+function(p,d,c)
+  local F, res, i;
+  F := FF(p,d);
+  if ForAll([2..Length(c)], i-> c[i] = 0) then
+    return c[1] * One(F);
+  fi;
+  if Length(c) < d then
+    c := ShallowCopy(c);
+    for i in [Length(c)+1..d] do
+      c[i] := 0;
+    od;
+  fi;
+  res := 2*PrimitiveElement(F);
+  c := Z(p)^0 * c;
+  ConvertToVectorRep(c, p);
+  res![1] := c;
+  return res;
+end);
+
+# nicer print/view for standard finite field elements
+InstallMethod(PrintString, ["IsStandardFiniteFieldElement"],
+function(x)
+  local F, c, res;
+  F := FamilyObj(x)!.wholeField;
+  c := x![1];
+  if not IsList(c) then c := [c]; fi;
+  res := Concatenation( "ZZ(", String(Characteristic(F)),",",
+            String(DegreeOverPrimeField(F)),",",String(List(c, IntFFE)),")");
+  RemoveCharacters(res, " ");
+  res := SubstitutionSublist(res, ",", "\<,\>");
+  return res;
+end);
+InstallMethod(PrintObj, ["IsStandardFiniteFieldElement"], 
+              function(x) Print(PrintString(x)); end);
+InstallMethod(ViewString, ["IsStandardFiniteFieldElement"], PrintString);
+InstallMethod(String, ["IsStandardFiniteFieldElement"], 
+              x-> StripLineBreakCharacters(PrintString(x)));
+
+# arithmetic for elements from different standard fields
+InstallGlobalFunction(MoveToCommonStandardField, function(a, b)
+  local Fa, Fb, p, da, db, d, F;
+  Fa := FamilyObj(a)!.wholeField;
+  Fb := FamilyObj(b)!.wholeField;
+  p := Characteristic(Fa);
+  if p <> Characteristic(Fb) then Error("different characteristic"); fi;
+  da := DegreeOverPrimeField(Fa);
+  db := DegreeOverPrimeField(Fb);
+  d := LcmInt(da, db);
+  F := FF(p, d);
+  if da < d then
+    a := a^Embedding(Fa, F);
+  fi;
+  if db < d then
+    b := b^Embedding(Fb, F);
+  fi;
+  return [a, b];
+end);
+InstallMethod(\+, IsNotIdenticalObj, ["IsStandardFiniteFieldElement",
+"IsStandardFiniteFieldElement"], function(a, b)
+  return CallFuncList(\+, MoveToCommonStandardField(a, b));
+end);
+InstallMethod(\*, IsNotIdenticalObj, ["IsStandardFiniteFieldElement",
+"IsStandardFiniteFieldElement"], function(a, b)
+  return CallFuncList(\*, MoveToCommonStandardField(a, b));
+end);
+InstallMethod(\=, IsNotIdenticalObj, ["IsStandardFiniteFieldElement",
+"IsStandardFiniteFieldElement"], function(a, b)
+  return Characteristic(a) = Characteristic(b) and
+         SteinitzPair(a) = SteinitzPair(b);
+end);
+# utility to represent element in smallest field
+InstallGlobalFunction(MoveToSmallestStandardField, function(a)
+  local Fa, d, st, F;
+  if IsFFE(a) then
+    # also handle elements in GF(p,n)
+    d := DegreeOverPrimeField(DefaultField(a));
+    if d = 1 then return a; fi;
+    a := a^StandardIsomorphismGF(FF(Characteristic(a), d));
+  fi;
+  Fa := FamilyObj(a)!.wholeField;
+  d := DegreeOverPrimeField(Fa);
+  st := SteinitzPair(a);
+  if st[1] = d then
+    return a;
+  else
+    F := FF(Characteristic(Fa), st[1]);
+    return PreImageElm(Embedding(F, Fa), a);
+  fi;
+end);
+
+##  # for convenience we also allow mixed arithmetic with GF(p,d)
+##  InstallMethod(\+, ["IsStandardFiniteFieldElement", "IsFFE"],
+##  function(a, b)
+##    b := MoveToSmallestStandardField(b);
+##    if IsFFE(b) then
+##      # b is in prime field
+##    return a + MoveToSmallestStandardField(b);
+##  end);
+##  InstallMethod(\+, ["IsFFE", "IsStandardFiniteFieldElement"],
+##  function(a, b)
+##    return MoveToSmallestStandardField(a) + b;
+##  end);
+##  InstallMethod(\*, ["IsStandardFiniteFieldElement", "IsFFE"],
+##  function(a, b)
+##    return a * MoveToSmallestStandardField(b);
+##  end);
+##  InstallMethod(\*, ["IsFFE", "IsStandardFiniteFieldElement"],
+##  function(a, b)
+##    return MoveToSmallestStandardField(a) * b;
+##  end);
+

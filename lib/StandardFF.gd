@@ -11,52 +11,45 @@
 DeclareGlobalFunction("SteinitzNumberForPrimeDegree");
 DeclareGlobalFunction("StandardPrimeDegreePolynomial");
 DeclareGlobalFunction("_ExtensionWithTowerBasis");
-DeclareGlobalFunction("StandardFiniteFieldTower");
 # standard finite fields as simple extensions over prime field GF(p)
-DeclareGlobalFunction("StandardFiniteFieldNonSparse");
 DeclareGlobalFunction("StandardFiniteField");
 DeclareSynonym("FF", StandardFiniteField);
 
-DeclareCategory("IsStandardFiniteFieldTower", IsFiniteFieldTower);
 DeclareProperty("IsStandardFiniteField", 
                          IsField and IsFinite and IsAlgebraicExtension);
-DeclareCategory("IsStandardFiniteFieldElement", IsAlgebraicElement);
+DeclareCategory("IsStandardFiniteFieldElement", 
+                         IsAlgebraicElement and IsKroneckerConstRep);
 
-DeclareAttribute("Tower", IsStandardFiniteField);
 DeclareAttribute("PrimitivePowersInTowerBasis", IsStandardFiniteField);
 DeclareAttribute("TowerBasis", IsStandardFiniteField);
-DeclareAttribute("TowerBasisMap", IsStandardFiniteField);
 
-
-DeclareOperation("ToTowerElement", [IsStandardFiniteField, IsObject]);
-DeclareOperation("FromTowerElement", [IsStandardFiniteField, IsObject]);
 DeclareOperation("SteinitzNumber", [IsStandardFiniteField, IsRingElement]);
 DeclareOperation("ElementSteinitzNumber", [IsStandardFiniteField, IsInt]);
 
 DeclareOperation("AsVector", [IsStandardFiniteFieldElement]);
+DeclareAttribute("GeneratorMonomials", IsStandardFiniteField);
+DeclareAttribute("TowerBasisMonomials", IsStandardFiniteField);
 DeclareAttribute("AsPolynomial", IsStandardFiniteFieldElement);
 DeclareOperation("ElementVector", [IsStandardFiniteField, IsRowVector]);
 DeclareOperation("ElementPolynomial", [IsStandardFiniteField, IsPolynomial]);
-
-# records for helper functions
-SFFHelper := rec();
-MakeReadOnlyGlobal("SFFHelper");
-TowerMon := rec();
-MakeReadOnlyGlobal("TowerMon");
 
 # embeddings
 DeclareGlobalFunction("StdMon");
 DeclareGlobalFunction("StdMonDegs");
 DeclareGlobalFunction("StdMonMap");
 DeclareGlobalFunction("EmbedSteinitz");
-DeclareGlobalFunction("StandardIsomorphismGF");
 DeclareCategory("IsStandardFiniteFieldEmbedding", IsFieldHomomorphism);
 DeclareOperation("SteinitzPair", [IsStandardFiniteFieldElement]);
-# use only for standard finite field towers
-DeclareOperation("SteinitzPair", [IsFiniteFieldTowerElement]);
-
 
 DeclareAttribute("SteinitzPairConwayGenerator", IsStandardFiniteField);
+DeclareGlobalFunction("StandardIsomorphismGF");
 
 # helper to identify GF(p)'s in method selection
 DeclareProperty("IsStandardPrimeField", IsField and IsFinite);
+
+# creating elements
+DeclareOperation("ZZ", [IsInt, IsInt, IsList]);
+
+# arithmetic in algebraic closure
+DeclareGlobalFunction("MoveToCommonStandardField");
+DeclareGlobalFunction("MoveToSmallestStandardField");

@@ -5,7 +5,6 @@
 ##  The files Util.g{i,d}  contain code for some utiltiy functions.
 ##  
 
-DeclareGlobalFunction("SimpleRandomRange");
 DeclareGlobalFunction("StandardAffineShift");
 
 DeclareGlobalFunction("FindLinearCombination");

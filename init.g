@@ -7,7 +7,6 @@
 
 ReadPackage( "StandardFF", "lib/Util.gd");
 ReadPackage( "StandardFF", "lib/IsIrred.gd");
-ReadPackage( "StandardFF", "lib/TowerArith.gd");
 ReadPackage( "StandardFF", "lib/StandardFF.gd");
 ReadPackage( "StandardFF", "lib/StandardCyc.gd");
 

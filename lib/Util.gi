@@ -11,7 +11,7 @@
 ##  <Oper Name="InvModCoeffs" Arg="fcoeffs, gcoeffs" />
 ##  <Returns>a list of <K>fail</K></Returns>
 ##  <Description>
-##  The arguments <A>fcoeffs</A> and <A>gcoeffs</A>  are coeffient list of two
+##  The arguments <A>fcoeffs</A> and <A>gcoeffs</A> are coeffient lists of two
 ##  polynomials <M>f</M> and <M>g</M>.
 ##  This operation returns  the coefficient list of  the inverse <M>f^{-1}</M>
 ##  modulo  <M>g</M>, if  <M>f</M> and  <M>g</M> are  coprime, and <K>fail</K>
@@ -69,57 +69,25 @@ InstallMethod(InvModCoeffs, [IsList, IsList], function(f, g)
   fi;
 end);
 
-##  <#GAPDoc Label="SimpleRandomRange">
+##  <#GAPDoc Label="StandardAffineShift">
 ##  <ManSection>
-##  <Func Name="SimpleRandomRange" Arg="max, seed" />
-##  <Returns>a pair <C>[rand, nseed]</C> of integers </Returns>
+##  <Func Arg="q, i" Name="StandardAffineShift" />
+##  <Returns>an integer in range <C>[0..q-1]</C></Returns>
 ##  <Description>
-##  The argument <A>max</A> must be  a non-negative integer and <A>seed</A> an
-##  integer  which is  no  multiple  of the  prime  <M>2^{32}-5</M> (only  its
-##  residue class modulo this prime is  used). This function implements a very
-##  simple pseudo  random number generator defined  in <Cite Key="StdFFCyc"/>.
-##  The result  is a pair <C>[rand,  nseed]</C> where <C>rand</C> is  a random
-##  integer  in  the range  <C>[0..<A>max</A>-1]</C>  and  <C>nseed</C> is  an
-##  integer that can be used as seed for further calls of this function.
-##  <P/> 
-##  <Example>gap> pair := [0,1];;
-##  gap> for i in [1..3] do
-##  >   pair := SimpleRandomRange(1000000, pair[2]); Print(pair, "\n");
-##  > od;
-##  [ 313679, 1347244577 ]
-##  [ 625568, 2686795180 ]
-##  [ 853364, 3665171566 ]
+##  This  function returns  <M>(m <A>i</A>  + a)  \textrm{mod} <A>q</A></M>,
+##  where <M>m</M>  is the largest integer  prime to <A>q</A> and  <M>\leq 4
+##  <A>q</A> /  5</M>, and  a is  the largest integer  <M>\leq 2  <A>q</A> /
+##  3</M>.
+##  <P/>
+##  For  fixed <M>q</M>  this function  provides  a bijection  on the  range
+##  <C>[0..q-1]</C>.
+##  <Example>gap> List([0..10], i-> StandardAffineShift(11, i));
+##  [ 7, 4, 1, 9, 6, 3, 0, 8, 5, 2, 10 ]
 ##  </Example>
 ##  </Description>
 ##  </ManSection>
 ##  <#/GAPDoc>
 ##  
-# seed must be <> 0 mod 2^32-5.
-# max some positive integer
-# returns:  [rand, newseed] with 0 <= rand < max and new seed
-PROPERRANDOMRANGE := false;
-InstallGlobalFunction(SimpleRandomRange, function(max, seed)
-  local m, a, b, r, mm;
-  if PROPERRANDOMRANGE = true then
-    return [Random(0,max-1),1];
-  fi;
-  # prime 2^32-5;
-  m := 4294967291;
-  # has order m-1 mod m
-  a := 1347244577;
-  # compute random (m-1)-adic digits with maximum >= 100*max
-  b := max*100;
-  # pseudo random number r and possible maximum mm
-  r := 0;
-  mm := 1;
-  while mm < b do
-    mm := mm*(m-1);
-    seed := a*seed mod m;
-    r := r*(m-1) + seed - 1;
-  od;
-  return [QuoInt(max*r, mm), seed];
-end);
-
 BindGlobal("SASCache", [0,0,0]);
 InstallGlobalFunction(StandardAffineShift, function(q, i)
   local m, a;
@@ -904,19 +872,19 @@ end);
 ##  <Example>gap> tab := BrauerTable("M", 19);
 ##  BrauerTable( "M", 19 )
 ##  gap> # cannot translate some values to different lift
-##  gap> fail in StandardValuesBrauerCharacter(tab, Irr(tab)[16]);
-##  false
+##  gap> fail in AsList(StandardValuesBrauerCharacter(tab, Irr(tab)[16]));
+##  true
 ##  gap> # but table contains the irreducible Brauer characters for any lift
 ##  gap> ForAll(Irr(tab), bch-> IsGaloisInvariant(tab, bch));
 ##  true
-##  gap> tab := BrauerTable("A18", 7);
-##  BrauerTable( "A18", 7 )
+##  gap> tab := BrauerTable("A18", 3);
+##  BrauerTable( "A18", 3 )
 ##  gap> # here different lifts lead to different Brauer character tables
-##  gap> bch := Irr(tab)[123];;
+##  gap> bch := Irr(tab)[38];;
 ##  gap> IsGaloisInvariant(tab, bch);
 ##  false
 ##  gap> new := StandardValuesBrauerCharacter(tab, bch);;
-##  gap> fail in new;
+##  gap> fail in AsList(new);
 ##  false
 ##  gap> Position(Irr(tab), new);
 ##  fail

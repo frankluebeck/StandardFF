@@ -10,7 +10,6 @@
 ##  <ManSection>
 ##  <Heading>Computing all fields in various ranges</Heading>
 ##  <Func Name="AllPrimeDegreePolynomials" Arg="p, bound"/>
-##  <Func Name="AllStandardTowers" Arg="p, bound"/>
 ##  <Func Name="AllFF" Arg="p, bound"/>
 ##  <Func Name="AllPrimitiveRoots" Arg="p, bound"/>
 ##  <Func Name="AllPrimitiveRootsCANFACT" Arg=""/>
@@ -24,11 +23,6 @@
 ##  polynomials  of prime  degree needed  for the  construction of  all finite
 ##  fields of order <M><A>p</A>^i</M>, <M>1 \leq i \leq <A>bound</A></M>. This
 ##  is the most time consuming part in the construction of the fields.
-##  <P/> 
-##  <Ref Func="AllStandardTowers"/> computes all standardized towers of finite
-##  fields of order <M><A>p</A>^i</M>, <M>1 \leq i \leq <A>bound</A></M>. This
-##  does not need much computation time  when the previous function was called
-##  for the same range before.
 ##  <P/> 
 ##  <Ref  Func="AllFF"/> computes  all  <C>FF(p,i)</C> for  <M>1  \leq i  \leq
 ##  <A>bound</A></M>. When  the previous  function was  called before  for the
@@ -73,7 +67,8 @@ AllPrimeDegreePolynomials := function(p, bound)
         Print([p,r,k],"\c");
         t := Runtime();
         PrintTo(out,"# ",p,", ",r,", ",k,": \c");
-        pl := StandardPrimeDegreePolynomial(p,r,k);
+        #pl := StandardPrimeDegreePolynomial(p,r,k);
+        pl := SteinitzNumberForPrimeDegree(p,r,k);
         tt := Runtime()-t;
         PrintTo(out, tt, "\n");
         Add(times, [p,r,k,tt]);
@@ -81,26 +76,6 @@ AllPrimeDegreePolynomials := function(p, bound)
         k := k+1;
       od;
     fi;
-  od;
-  PrintTo(out, "\n\n# Total time: ",StringTime(Runtime()-T), "\n\n");
-  PrintTo(out, "times := \n", times, ";\n\n");
-  CloseStream(out);
-  return times;
-end;
-AllStandardTowers := function(p, bound)
-  local nam, out, T, times, t, pl, tt, n;
-  nam := Concatenation("p",String(p),"nTower_",String(bound),".log");
-  out := OutputTextFile(nam, false);
-  T := Runtime();
-  times := [];
-  for n in [1..bound] do
-    Print([p,n],"\c");
-    t := Runtime();
-    PrintTo(out, "# Tower ",p,", ",n,": \c");
-    pl := StandardFiniteFieldTower(p,n);
-    tt := Runtime()-t;
-    PrintTo(out, tt, "\n");
-    Add(times, [p,n,tt]);
   od;
   PrintTo(out, "\n\n# Total time: ",StringTime(Runtime()-T), "\n\n");
   PrintTo(out, "times := \n", times, ";\n\n");

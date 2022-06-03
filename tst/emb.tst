@@ -2,18 +2,13 @@
 gap> START_TEST("Steinitz pairs");
 gap> F := FF(3,6);
 FF(3, 6)
-gap> T := Tower(F);
-FFTower(3;2,3)
 gap> res := true;;
-gap> for x in F do nr := SteinitzNumber(x);
-> t := ToTowerElement(F, x); sp := SteinitzPair(x);
-> res := res and FromTowerElement(F,t)=x and SteinitzNumber(t)=nr and
-> SteinitzPair(t) = sp and
-> AsPolynomial(x) = PolynomialFiniteFieldTowerElement(t) and
+gap> for x in F do 
+> nr := SteinitzNumber(x);
+> sp := SteinitzPair(x);
+> res := res and
 > SteinitzNumber(F,sp) = nr and
-> SteinitzPair(F,nr) = sp and
-> SteinitzNumber(T,sp) = nr and
-> SteinitzPair(T,nr) =sp; 
+> SteinitzPair(F,nr) = sp; 
 > od;
 gap> res;
 true
@@ -23,8 +18,6 @@ gap> L := FF(2,10);
 FF(2, 10)
 gap> emb := Embedding(L, K);;
 gap> ForAll(L, x-> SteinitzPair(x) = SteinitzPair(x^emb));
-true
-gap> ForAll(L, x-> AsPolynomial(x) = AsPolynomial(x^emb));
 true
 gap> ForAll(L, x-> x = PreImageElm(emb, x^emb));
 true
@@ -39,8 +32,6 @@ GF(17)
 gap> emb := Embedding(L, K);;
 gap> ForAll(L, x-> SteinitzPair(x) = SteinitzPair(x^emb));
 true
-gap> ForAll(L, x-> AsPolynomial(x) = AsPolynomial(x^emb));
-false
 gap> ForAll(L, x-> x = PreImageElm(emb, x^emb));
 true
 gap> PreImageElm(emb, PrimitiveElement(K));
@@ -51,8 +42,6 @@ gap> L := FF(499,1);
 GF(499)
 gap> emb := Embedding(L, K);;
 gap> ForAll(L, x-> SteinitzPair(x) = SteinitzPair(x^emb));
-true
-gap> ForAll(L, x-> AsPolynomial(x) = AsPolynomial(x^emb));
 true
 gap> ForAll(L, x-> x = PreImageElm(emb, x^emb));
 true

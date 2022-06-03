@@ -4,9 +4,9 @@
 <Heading>Utilities from the <Package>StandardFF</Package> package</Heading>
 
 <Section Label="sec:SimpleRand">
-<Heading>A very basic random number generator</Heading>
+<Heading>A simple bijection on a range</Heading>
 
-<#Include Label="SimpleRandomRange">
+<#Include Label="StandardAffineShift">
 
 </Section>
 
@@ -98,20 +98,6 @@ this package.
 <Heading>Undocumented features</Heading>
 We mention some features of this package which may be temporary, vanish or
 changed.
-
-The    functions   <Ref    Func="StandardFiniteFieldTower"/>   and    <Ref
-Func="StandardPrimeDegreePolynomial"/>    take   an    optional   argument
-<C>"Trace"</C>. In  that case  different irreducible polynomials  of prime
-degree  <M>r</M> are  computed  when <M>r</M>  is  not the  characteristic
-<M>p</M> of  the field and  <M>r</M> does  not divide <M>p-1</M>.  It uses
-computations in larger  fields which contain <M>r</M>-th roots  of one and
-traces  into <M>r</M>-power  extensions over  the prime  field (see  <Cite
-Key="StdFFCyc" Where="5.4"/> for details).
-<P/>
-The  function  <C>SFFHelper.GFCyclotomicPolynomials(r,  q)</C> may  be  of
-independent interest: For a power <M>q</M> of a prime <M>p</M> and another
-prime  <M>r</M> it  returns  the irreducible  factors  of the  <M>r</M>-th
-cyclotomic polynomial <M>(X^r-1)/(X-1)</M> over <C>GF(q)</C>.
 <P/>
 A   directory  <F>ntl</F>   contains  some   simple  standalone   programs
 which  use  the  library  NTL  <Cite  Key="NTL"/>.  There  is  a  function

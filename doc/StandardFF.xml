@@ -35,7 +35,6 @@
 <Body>
 
 <#Include SYSTEM "Intro.xml">
-<#Include SYSTEM "Towers.xml">
 <#Include SYSTEM "StdFF.xml">
 <#Include SYSTEM "StdCyc.xml">
 <#Include SYSTEM "Util.xml">
