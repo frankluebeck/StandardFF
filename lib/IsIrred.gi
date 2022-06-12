@@ -54,6 +54,9 @@ end);
 # for general polynomials, test for divisors of all lower degrees 
 InstallGlobalFunction(IsIrreducibleCoeffList, function(cs, q)
   local d, v, z, o, vq, vqq, mat, vv, m, k, i;
+  if not IsMutable(cs) then
+    cs := ShallowCopy(cs);
+  fi;
   d := Length(cs)-1;
   if IsPrimeInt(d) and q < 5 then
     return IsIrreducibleCoeffListPrimeDegree(cs, q);
