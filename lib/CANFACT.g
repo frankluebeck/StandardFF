@@ -34,11 +34,10 @@
 ##  should also update your &GAP; installation with:
 ##  <Log>
 ##  FetchMoreFactors(
-##    "http://wwwmaths.anu.edu.au/~brent/ftp/factors/factors.gz",
+##    "https://maths-people.anu.edu.au/~brent/ftp/factors/factors.gz",
 ##    false);
 ##  FetchMoreFactors(
-##    "http://myfactorcollection.mooo.com:8090/brentdata/\
-##  Feb28_2021/factors.gz",
+##    "http://myfactorcollection.mooo.com:8090/brentdata/May31_2022/factors.gz",
 ##    true);
 ##  </Log>
 ##  </Description>

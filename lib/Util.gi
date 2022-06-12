@@ -794,12 +794,12 @@ end);
 # application examples (only needed once per GAP installation):
 ### Brent original factor lists, no longer maintained
 ##  FetchMoreFactors(
-##    "http://wwwmaths.anu.edu.au/~brent/ftp/factors/factors.gz",
+##    "https://maths-people.anu.edu.au/~brent/ftp/factors/factors.gz",
 ##    false);
 ### newer and more factors collected by Jonathan Crombie, check occasionally
 ### if newer updates are available and adjust date part of URL:
 ##  FetchMoreFactors(
-##    "http://myfactorcollection.mooo.com:8090/brentdata/Feb28_2021/factors.gz",
+##    "http://myfactorcollection.mooo.com:8090/brentdata/May31_2022/factors.gz",
 ##    true);
 InstallGlobalFunction(FetchMoreFactors,   function ( url, write )
   local  str, get, comm, rows, b, k, a, dir;
@@ -808,7 +808,8 @@ InstallGlobalFunction(FetchMoreFactors,   function ( url, write )
 
   str := "";
   get := OutputTextString(str, false);
-  comm := Concatenation("wget -q ", url, " -O - | gzip -dc ");
+  comm := Concatenation("wget --no-check-certificate -q ", 
+                         url, " -O - | gzip -dc ");
   Process(DirectoryCurrent(), Filename(DirectoriesSystemPrograms(),"sh"),
           InputTextUser(), get, ["-c", comm]);
 
@@ -818,6 +819,8 @@ InstallGlobalFunction(FetchMoreFactors,   function ( url, write )
     b := List(SplitString(a, "", "+- \n"), Int);
     if not IsBound(BRENTFACTORS[b[1]]) then
       BRENTFACTORS[b[1]] := [];
+    elif not IsMutable(BRENTFACTORS[b[1]]) then
+      BRENTFACTORS[b[1]] := ShallowCopy(BRENTFACTORS[b[1]]);
     fi;
     if '-' in a then
       k := b[2];
@@ -827,6 +830,9 @@ InstallGlobalFunction(FetchMoreFactors,   function ( url, write )
     if not IsBound(BRENTFACTORS[b[1]][k]) then
       BRENTFACTORS[b[1]][k] := [b[3]];
     else
+      if not IsMutable(BRENTFACTORS[b[1]][k]) then 
+        BRENTFACTORS[b[1]][k] := ShallowCopy(BRENTFACTORS[b[1]][k]);
+      fi;
       Add(BRENTFACTORS[b[1]][k], b[3]);
     fi;
   od;
