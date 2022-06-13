@@ -11,7 +11,7 @@
 # bound: multiple of order of p mod r^k
 # returns standard generator of order r^k in \bar GF(p) as Steinitz pair
 InstallGlobalFunction(StdCycGen, function(p, r, k, bound)
-  local F, cgens, res, l, m, mm, t, K, count, st, a, am, pl, b, 
+  local F, cgens, res, l, m, t, K, count, st, a, am, pl, b, 
         z, bb, aa, e, c, j, min, nn, s;
   # we cache the results
   F := GF(p);
@@ -23,10 +23,21 @@ InstallGlobalFunction(StdCycGen, function(p, r, k, bound)
   if res <> fail then
     return res[3];
   fi;
+  # trivial case
+  if r = 2 and k = 1 and p mod 4 = 3 then
+    pl := [1, p-1]; # -1
+    Add(cgens, [2,1,pl]);
+    return pl;
+  fi;
   # smallest degree containing r-elements
-  l := OrderModBound(p, r, bound);
+  if r = 2 and p mod 4 = 3 then
+    # exception, here l = 2 is the base case
+    # (compatibility with l=1 case is always fulfilled)
+    l := 2;
+  else
+    l := OrderModBound(p, r, bound);
+  fi;
   m := (p^l-1)/r;
-  mm := m;
   t := 1;
   while m mod r = 0 do
     m := m/r;
@@ -53,7 +64,7 @@ InstallGlobalFunction(StdCycGen, function(p, r, k, bound)
     Add(cgens, [r, k, pl]);
     return pl;
   elif t > k then
-    # just embed from smaller field
+    # just take power of element of order r^t
     K := StandardFiniteField(p, l);
     a := ElementSteinitzNumber(K, 
               SteinitzNumber(K, StdCycGen(p, r, t, bound)));
@@ -61,12 +72,9 @@ InstallGlobalFunction(StdCycGen, function(p, r, k, bound)
     pl := SteinitzPair(K, am);
     Add(cgens, [r, k, pl]);
     return pl;
-  else
+  else # k > t
     # expensive case:
-    # for r odd or r=2 and p = 1 (4):
-    # have to compute an r-th root of element of order r^(k-1)
-    # exception if r=2 and p = 3 (4):take recursively smaller square root,
-    # starting with -1 in GF(p).
+    # have to compute an r-th root of standard element of order r^(k-1)
     l := OrderModBound(p, r^k, bound);
     K := StandardFiniteField(p, l);
     # this element generates a subfield of index r
@@ -81,6 +89,8 @@ InstallGlobalFunction(StdCycGen, function(p, r, k, bound)
     # r-th root of one
     z := a^(r^(k-1));
     # find e with a^e is r-th root of b
+    # by dicrete logarithm: (a^r)^e =  b
+    # We use Pohlig-Hellman algorithm 
     # (the j below are the coefficients of e in base r)
     bb := b;
     aa := a^r;
@@ -180,7 +190,9 @@ GAPInfo.tmpfun := function(K, ord)
   fac := Collected(Factors(ord));
   # standard generators of prime power order
   ppgens := List(fac, a-> StdCycGen(p, a[1], a[2], n));
+  # map Steinitz pairs to Steinitz numbers
   ppgens := List(ppgens, a-> SteinitzNumber(K, a));
+  # and now to elements in K
   ppgens := List(ppgens, a-> ElementSteinitzNumber(K, a));
 
   # product has correct order, we take power to find element corresponding
