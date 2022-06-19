@@ -30,3 +30,8 @@ DeclareGlobalFunction("StandardValuesBrauerCharacter");
 DeclareGlobalFunction("IsGaloisInvariant");
 DeclareGlobalFunction("SmallestDegreeFrobeniusCharacterValue");
 DeclareGlobalFunction("StandardFrobeniusCharacterValue");
+
+# for multivariate polynomial wrt one indeterminate
+DeclareOperation("Degree", [IsPolynomial, IsObject]);
+DeclareOperation("Indets", [IsObject]);
+

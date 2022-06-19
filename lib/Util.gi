@@ -1016,4 +1016,51 @@ InstallGlobalFunction(StandardFrobeniusCharacterValue, function(cyc, F)
   return res;
 end);
   
+# utilities for multivariate polynomials
 
+##  Degree of multivariate polynomial in variable (given a number or polynomial)
+##  (get coefficients with PolynomialCoefficientsOfPolynomial)
+InstallMethod(Degree, ["IsPolynomial", "IsObject"], 
+function(pol, var)
+  local ext, res, a, i, j;
+  if not IsInt(var) then
+    var := IndeterminateNumberOfLaurentPolynomial(var);
+  fi;
+  ext := ExtRepPolynomialRatFun(pol);
+  res := 0;
+  for i in [1,3..Length(ext)-1] do
+    a := ext[i];
+    for j in [1,3..Length(a)-1] do
+      if a[j] = var and a[j+1] > res then
+        res := a[j+1];
+      fi;
+    od;
+  od;
+  return res;
+end);
+
+# helper: numbers of indeterminates of a multivariate polynomial 
+# l can also be cyclotomic or finite field element or recursive list
+# of these
+InstallMethod(Indets, ["IsObject"], function(l)
+  local odds, is, ext, iss, res, i;
+  odds := l-> l{[1,3..Length(l)-1]};
+  if IsList(l) then
+    is := Concatenation(List(l, Indets));
+  elif IsCyc(l) or IsFFE(l) then
+    is := [];
+  elif IsPolynomial(l) then
+    ext := ExtRepPolynomialRatFun(l);
+    is := Concatenation(List(odds(ext), a-> odds(a)));
+  fi;
+  iss := [];
+  IsSet(iss);
+  res := [];
+  for i in is do
+    if not i in iss then
+      AddSet(iss, i);
+      Add(res, i);
+    fi;
+  od;
+  return res;
+end);
