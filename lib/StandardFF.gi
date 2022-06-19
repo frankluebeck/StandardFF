@@ -208,6 +208,13 @@ InstallGlobalFunction(_ExtensionWithTowerBasis, function(K, deg, lcoeffs, b)
   var := Indeterminate(F, vnam);
   ivar := IndeterminateNumberOfUnivariateLaurentPolynomial(var);
   Kp := AlgebraicExtensionNC(F, UnivariatePolynomial(F, p, ivar), vnam);
+
+# temporary work around for a bug in GAP-dev
+if Characteristic(K) > 2^16 then
+  fam := ElementsFamily(FamilyObj(Kp));;
+  fam!.reductionMat := List(fam!.reductionMat,List);
+fi;
+
   Setter(IsStandardFiniteField)(Kp, true);
   Setter(PrimitivePowersInTowerBasis)(Kp, pmat);
   # let elements know to be in standard field
