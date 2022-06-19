@@ -20,7 +20,7 @@
     <Email>Frank.Luebeck@Math.RWTH-Aachen.De</Email>
     <Homepage>http://www.math.rwth-aachen.de/~Frank.Luebeck</Homepage>
   </Author>
-  <Date>May 2021</Date>
+  <Date>June 2022</Date>
   <Copyright> &copyright; 2020- by Frank Lübeck <P/>
 <!-- We adopt the copyright regulations of &GAP; as detailed in the 
      copyright notice in the &GAP; Reference Manual. -->
@@ -28,6 +28,15 @@
     GNU Public License Version 3 or later,
     see <URL>http://www.gnu.org/licenses</URL>.
   </Copyright>
+  <Colophon>
+  WARNING: This package implements the constructions in the paper 
+  <Cite Key="StdFFCyc"/>. As long as that paper is not published
+  we reserve the right to still change the definition of <E>standard</E>
+  polynomials defining finite fields and <E>standard</E> generators of 
+  cyclic multiplicative subgroups. 
+  <P/>
+  In version 1.0 and later the definitions will not be changed anymore.
+  </Colophon>
 </TitlePage>
 
 <TableOfContents/>
