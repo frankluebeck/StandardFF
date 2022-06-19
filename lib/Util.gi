@@ -74,7 +74,7 @@ end);
 ##  <Func Arg="q, i" Name="StandardAffineShift" />
 ##  <Returns>an integer in range <C>[0..q-1]</C></Returns>
 ##  <Description>
-##  This  function returns  <M>(m <A>i</A>  + a)  \textrm{mod} <A>q</A></M>,
+##  This function returns <M>(m <A>i</A>  + a)  \textrm{ mod } <A>q</A></M>,
 ##  where <M>m</M>  is the largest integer  prime to <A>q</A> and  <M>\leq 4
 ##  <A>q</A> /  5</M>, and  a is  the largest integer  <M>\leq 2  <A>q</A> /
 ##  3</M>.
