@@ -7,6 +7,10 @@
 ##  indices, and as single extensions over the prime field.
 ##  
 
+# args: p, r, k
+# Let f = X^r + g(X) our standard irreducible polynomial for the 
+# degree r extension over the field FF(p,r^(k-1)). This function
+# returns the Steinitz number of the polynomial g(X).
 InstallGlobalFunction(SteinitzNumberForPrimeDegree, function(p, r, k)
   local Fp, stpd, stpdr, q, F, o, i, nr, x, a, l;
   Fp := StandardFiniteField(p, 1);
