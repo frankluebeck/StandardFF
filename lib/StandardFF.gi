@@ -1170,7 +1170,7 @@ function(x)
   local F, c, res;
   F := FamilyObj(x)!.wholeField;
   c := x![1];
-  if not IsList(c) then c := [c]; fi;
+  if IsFFE(c) then c := [c]; fi;
   res := Concatenation( "ZZ(", String(Characteristic(F)),",",
             String(DegreeOverPrimeField(F)),",",String(List(c, IntFFE)),")");
   RemoveCharacters(res, " ");
