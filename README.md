@@ -5,15 +5,15 @@ This package contains an implementation of *standard* generators of
 finite fields and of cyclic subgroups in the multiplicative groups
 of finite fields, as described in 
 
-     ... link will be added soon ...
+     https://arxiv.org/abs/2107.02257
 
-Installation an usage
+Installation and usage
 =====================
 
 Copy the package into a subdirectory below $GAPHOME/pkg.
 No further installation is needed.
 
-Load the package within you GAP session with
+Load the package within your GAP session with
    LoadPackage("StandardFF");
 
 Regenerate documentation inside the package directory with
