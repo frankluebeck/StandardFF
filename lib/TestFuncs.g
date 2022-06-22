@@ -53,10 +53,21 @@
 ##  </ManSection>
 ##  <#/GAPDoc>
 ##  
-AllPrimeDegreePolynomials := function(p, bound)
-  local nam, out, T, times, rr, k, t, pl, tt, r;
+AllPrimeDegreePolynomials := function(p, bound, cache...)
+  local nam, out, T, times, rr, k, t, pl, tt, r, outc;
+  if Length(cache) > 0 and cache[1] = true then
+    cache := true;
+  else
+    cache := false;
+  fi;
   nam := Concatenation("p",String(p),"rk_",String(bound),".log");
   out := OutputTextFile(nam, false);
+  if cache then
+    nam := Concatenation("p_",String(p),"_stpp.g");
+    outc := OutputTextFile(nam, true);
+    PrintTo(outc, "\nif not IsBound(STPP) then STPP := []; fi;\n");
+  fi;
+  
   T := Runtime();
   times := [];
   for r in [1..bound] do
@@ -69,6 +80,9 @@ AllPrimeDegreePolynomials := function(p, bound)
         PrintTo(out,"# ",p,", ",r,", ",k,": \c");
         #pl := StandardPrimeDegreePolynomial(p,r,k);
         pl := SteinitzNumberForPrimeDegree(p,r,k);
+        if cache then
+          PrintTo(outc, "Add(STPP,",[p,r,k,pl],");\n");
+        fi;
         tt := Runtime()-t;
         PrintTo(out, tt, "\n");
         Add(times, [p,r,k,tt]);
@@ -80,6 +94,9 @@ AllPrimeDegreePolynomials := function(p, bound)
   PrintTo(out, "\n\n# Total time: ",StringTime(Runtime()-T), "\n\n");
   PrintTo(out, "times := \n", times, ";\n\n");
   CloseStream(out);
+  if cache then
+    CloseStream(outc);
+  fi;
   return times;
 end;
 AllFF := function(p, bound)
