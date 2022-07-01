@@ -1,0 +1,41 @@
+#!/bin/bash
+# utility to wrap the package for distribution    (c) Frank Lübeck
+
+echo " Are versions and dates updated? (dev/setversiondate ...)"
+read -n 1 -p "-->" start
+echo
+if [ $start'X' != 'yX' ]; then
+  echo Ok, please adjust and try again.
+  exit 2
+fi
+
+HERE=`pwd`
+DIRNAM=StandardFF-`cat VERSION`
+rm -rf buildtmp
+mkdir buildtmp
+cd buildtmp
+# clone and build documentation
+git clone $HERE ./$DIRNAM
+cd $DIRNAM
+gap4curr makedocrel.g
+rm -rf .git .gitignore data dev doc/*.aux doc/*.log doc/*.blg doc/*.xsl doc/*.ilg doc/*.brf doc/*.out
+
+# make reduced CANFACT the default to work with release version of GAP
+mv lib/CANFACT.g lib/CANFACT.g.extended
+mv lib/CANFACT.g.[0-9]* lib/CANFACT.g
+
+# now pack archive
+cd ..
+tar cvf $DIRNAM.tar $DIRNAM
+gzip -9 $DIRNAM.tar
+mv $DIRNAM.tar.gz ..
+cd ..
+rm -rf buildtmp
+
+echo "If content with the archive $DIRNAM.tar.gz use"
+echo "            repack.py $DIRNAM.tar.gz"
+echo "to produce the other archive formats."
+echo 
+echo "Then check dev/index.html and use"
+echo "            dev/copytoweb"
+

@@ -1,0 +1,65 @@
+#!/bin/bash 
+
+# utility to change version and date in all needed places
+if let "$# == 0"; then
+  echo 'Usage example: '
+  echo '            setversion 1.3.3 "27 Jul 2016"'
+  echo 'or for current date just:'
+  echo '            setversion 1.3.3' 
+  exit
+fi
+
+export LC_ALL=C
+
+VERSION=$1
+
+if let "$# == 1"; then
+  DATE=`date`
+else
+  DATE=$2
+fi
+
+MONYEAR=`date -d "$DATE" +"%B %Y"`
+
+DMY=`date -d "$DATE" +"%d/%m/%Y"`
+
+# ./VERSION file
+rm -f VERSION
+echo $VERSION > VERSION
+
+# Version in PackageInfo.g
+sed -e "s/^Version :=.*/Version := \""$VERSION"\",/" < PackageInfo.g > xxx
+rm -f PackageInfo.g
+mv xxx PackageInfo.g
+
+# Date in PackageInfo.g
+sed -e "s|^Date :=.*|Date := \""$DMY"\",|" < PackageInfo.g > xxx
+rm -f PackageInfo.g
+mv xxx PackageInfo.g
+
+# ArchiveURL in PackageInfo.g
+sed -e "s/StandardFF-.*/StandardFF-"$VERSION"\",/" < PackageInfo.g > xxx
+rm -f PackageInfo.g
+mv xxx PackageInfo.g
+
+# <Date> in doc/StandardFF.xml
+sed -e "s|<Date>.*</Date>|<Date>$MONYEAR</Date>|" < doc/StandardFF.xml > xxx
+rm -f doc/StandardFF.xml
+mv xxx doc/StandardFF.xml
+
+# Version and date in dev/index.html
+sed -e "s|<strong>Current version:.*|<strong>Current version: </strong> $VERSION (released $DMY)|" < dev/index.html > xxx
+rm -f dev/index.html
+mv xxx dev/index.html
+
+# Archive names in dev/index.html
+sed -e "s|StandardFF-[0-9\.]*|StandardFF-$VERSION\.|g" < dev/index.html > xxx
+sed -e "s|.-win.zip|-win.zip|g" < xxx > xxx1
+rm -f xxx dev/index.html
+mv xxx1 dev/index.html
+
+# "Last modified" in dev/index.html
+sed -e "s|Last modified:.*|Last modified: `date`|" < dev/index.html > xxx
+rm -f dev/index.html
+mv xxx dev/index.html
+

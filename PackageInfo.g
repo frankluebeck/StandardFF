@@ -8,7 +8,7 @@ SetPackageInfo( rec(
 PackageName := "StandardFF",
 Subtitle := "Standard finite fields and cyclic generators",
 Version := "0.9",
-Date := "13/06/2022", # dd/mm/yyyy format
+Date := "01/07/2022",
 
 Persons := [
   rec(
@@ -24,9 +24,9 @@ Persons := [
   ),
 ],
 
-#SourceRepository := rec( Type := "TODO", URL := "URL" ),
-#IssueTrackerURL := "TODO",
-#SupportEmail := "TODO",
+SourceRepository := rec( Type := "git", URL := "https://github.com/frankluebeck/StandardFF" ),
+#IssueTrackerURL := "",
+#SupportEmail := "",
 
 PackageWWWHome := "https://www.math.rwth-aachen.de/~Frank.Luebeck/gap/StandardFF/",
 
@@ -59,8 +59,8 @@ PackageDoc := rec(
 ),
 
 Dependencies := rec(
-  GAP := ">= 4.9",
-  NeededOtherPackages := [ [ "GAPDoc", ">= 1.6.1" ] ],
+  GAP := ">= 4.12",
+  NeededOtherPackages := [ [ "GAPDoc", ">= 1.6.5" ] ],
   SuggestedOtherPackages := [ ],
   ExternalConditions := [ ],
 ),

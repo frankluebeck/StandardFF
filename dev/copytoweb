@@ -1,0 +1,35 @@
+#!/bin/bash
+
+vers=`cat VERSION`
+
+WEBDIR="/users/luebeck/MyWWWHome/web/~Frank.Luebeck/gap/StandardFF"
+echo "Is ./dev/index.html updated (Version, subdir, archive names, last updated)?"
+echo "Copying files to this web directory, is that ok?"
+echo "       "$WEBDIR
+echo "Assuming that in this directory exist archives "
+echo "       StandardFF-"$vers"{.tar.bz2,,tar.gz,.zoo,-win.zip}"
+
+echo "Shall I start (y/N)?"
+read -n 1 -p "-->" start
+echo
+if [ $start'X' != 'yX' ]; then
+  echo Ok, please adjust and try again.
+  exit 2
+fi
+
+mkdir -p $WEBDIR
+
+echo producing HTML-version of manual with external links to GAP site . . .
+rm -f tttttmppre
+echo 'pathtoroot := "https://www.gap-system.org/Manuals";' >  tttttmppre
+gap4curr -r  tttttmppre < makedocrel.g > /dev/null
+
+echo copying archives . . .
+cp StandardFF-$vers{.tar.bz2,.tar.gz,-win.zip} $WEBDIR
+echo copying HTML- and PDF-version of manual . . .
+mkdir -p $WEBDIR/doc
+cp doc/*.html doc/*.css doc/*.js doc/manual.pdf $WEBDIR/doc/
+echo copying index.html pkgreadme.css PackageInfo.g README.md version . . .
+cp dev/index.html dev/pkgreadme.css PackageInfo.g README.md  CHANGES VERSION $WEBDIR
+mv $WEBDIR/CHANGES $WEBDIR/CHANGES.txt
+
