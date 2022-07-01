@@ -17,6 +17,13 @@
 
 </Section>
 
+<Section Label="sec:IsIrred">
+<Heading>Irreducibility over finite fields</Heading>
+
+<#Include Label="IsIrreducibleCoeffList">
+
+</Section>
+
 <Section Label="sec:Conway">
 <Heading>Connection to Conway polynomials</Heading>
 

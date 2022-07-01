@@ -51,6 +51,38 @@ InstallGlobalFunction(PMCspecial, function(v, q, cs)
   return vv;
 end);
 
+##  <#GAPDoc Label="IsIrreducibleCoeffList">
+##  <ManSection>
+##  <Func Name="IsIrreducibleCoeffList" Arg="coeffs, q" />
+##  <Returns><K>true</K> or <K>false</K></Returns>
+##  <Description>
+##  The argument  <A>coeffs</A> must be a  list of elements in  a finite field
+##  with <A>q</A> elements (or some subfield of it).
+##  <P/>
+##  The function checks if the univariate polynomial <M>f</M> with coefficient
+##  list <A>coeffs</A>  (ending with  the leading coefficient)  is irreducible
+##  over the field with <A>q</A> elements.
+##  <P/>
+##  The  algorithm  computes the  greatest  common  divisor of  <M>f</M>  with
+##  <M>X^{{q^i}} - X</M> for <M>i = 1,  2, \ldots</M> up to half of the degree
+##  of <M>f</M>.
+##  
+##  <Example>gap> cs := Z(3)^0 * ConwayPol(3,8);
+##  [ Z(3), Z(3), Z(3), 0*Z(3), Z(3)^0, Z(3), 0*Z(3), 0*Z(3), Z(3)^0 ]
+##  gap> IsIrreducibleCoeffList(cs, 3);
+##  true
+##  gap> F := FF(17,4);; x := PrimitiveElement(F);;
+##  gap> cs := [x, x+x^0, 0*x, x^0];
+##  [ ZZ(17,4,[0,1,0,0]), ZZ(17,4,[1,1,0,0]), ZZ(17,4,[0]), ZZ(17,4,[1]) ]
+##  gap> while not IsIrreducibleCoeffList(cs, 17^4) do
+##  >    cs[1] := cs[1] + One(F);
+##  > od;
+##  gap> cs;
+##  [ ZZ(17,4,[8,1,0,0]), ZZ(17,4,[1,1,0,0]), ZZ(17,4,[0]), ZZ(17,4,[1]) ]
+##  </Example>
+##  </Description>
+##  </ManSection>
+##  <#/GAPDoc>
 # for general polynomials, test for divisors of all lower degrees 
 InstallGlobalFunction(IsIrreducibleCoeffList, function(cs, q)
   local d, v, z, o, vq, vqq, mat, vv, m, k, i;
