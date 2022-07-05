@@ -273,7 +273,7 @@ end);
 ##  gap> StandardPrimeDegreePolynomial(13, 3, 2);
 ##  x3_2^3-x3_1
 ##  gap> StandardPrimeDegreePolynomial(13, 5, 1);
-##  x5_1^5+Z(13)^3*x5_1-Z(13)^0
+##  x5_1^5+Z(13)^4*x5_1^2+Z(13)^4*x5_1-Z(13)^0
 ##  </Example>
 ##  </Description>
 ##  </ManSection>
@@ -515,13 +515,13 @@ end);
 ##  gap> ElementPolynomial(F, pol^10) = a^10;
 ##  true
 ##  gap> nr := SteinitzNumber(a);
-##  163301081752089
+##  506020624175737
 ##  gap> a = ElementSteinitzNumber(F, nr);
 ##  true
 ##  gap> ## primitive element of FF(17, 6)
 ##  gap> y := ElementSteinitzNumber(F, 17^5);
-##  ZZ(17,12,[0,0,13,0,0,0,5,0,0,0,10,0])
-##  gap> y = ValuePol([0,0,13,0,0,0,5,0,0,0,10,0], PrimitiveElement(F));
+##  ZZ(17,12,[0,0,1,0,0,0,12,0,0,0,5,0])
+##  gap> y = ValuePol([0,0,1,0,0,0,12,0,0,0,5,0], PrimitiveElement(F));
 ##  true
 ##  gap> x6 := Indeterminate(FF(17,1), "x6");;
 ##  gap> MinimalPolynomial(FF(17,1), y, x6) = DefiningPolynomial(FF(17,6));
@@ -949,11 +949,11 @@ end);
 ##  <Example>gap> F := FF(23,18);
 ##  FF(23, 18)
 ##  gap> st := SteinitzPairConwayGenerator(F);
-##  [ 18, 1452488057533031176256047 ]
+##  [ 18, 1362020736983803830549380 ]
 ##  gap> st9 := SteinitzPairConwayGenerator(FF(23,9));
-##  [ 9, 242037340726 ]
+##  [ 9, 206098743447 ]
 ##  gap> st6 := SteinitzPairConwayGenerator(FF(23,6));
-##  [ 6, 74033510 ]
+##  [ 6, 45400540 ]
 ##  gap> z  := ElementSteinitzNumber(F, st[2]);;
 ##  gap> z9 := ElementSteinitzNumber(F, SteinitzNumber(F, st9));;
 ##  gap> z6 := ElementSteinitzNumber(F, SteinitzNumber(F, st6));;
@@ -967,7 +967,7 @@ end);
 ##  true
 ##  gap> l := Filtered(ZeroesConway(F), x-> x^e9 = z9 and x^e6 = z6);;
 ##  gap> List(l, SteinitzNumber);
-##  [ 1452488057533031176256047 ]
+##  [ 1362020736983803830549380 ]
 ##  </Example>
 ##  </Description>
 ##  </ManSection>

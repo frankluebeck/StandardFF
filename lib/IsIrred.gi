@@ -151,66 +151,76 @@ InstallGlobalFunction(IsIrreducibleCoeffList, function(cs, q)
   # now we get further q-powers by matrix multiplication
   # in step i (<=d/2) we check for irreducible factors of degree i
 ##    for i in [2..QuoInt(d,2)] do
-  for i in [2..2*Log2Int(d)] do
+  for i in [2..Log2Int(d)] do
+    # checking for factors of degree <= Log2(d) first
+    # seems a good compromise in experiments
     vq := vq*mat;
     while Length(vq) > 0 and IsZero(vq[Length(vq)]) do
       Unbind(vq[Length(vq)]);
     od;
     if Length(GcdCoeffs(vq-v, cs)) > 1 then
-      Info(InfoStandardFF, 2, i,"\c");
+      Info(InfoStandardFF, 3, i,"\c");
       return false;
     fi;
   od;
 ##    return true;
+  # if no small degree factor found we now compute rank
   for i in [1..d] do 
      mat[i][i]:=mat[i][i]-One(mat[i][i]); 
   od;
   return RankMat(mat) = d-1;
 end);
 
-# About 1/d of all monic polynomials of degree d with constant term a are
+# About 1/r of all monic polynomials of degree r with constant term a are
 # irreducible.
-# We try to find sparse polynomials. After each d tries we allow 
+# We try to find sparse polynomials. After each r tries we allow 
 # additional non-zero coefficients.
-InstallGlobalFunction(StandardIrreducibleCoeffList, function(K, d, a)
-  local l, q, count, inc, dd, st, k;
+# See Algorithm 5.5 of the article StdFFCyc.
+InstallGlobalFunction(StandardIrreducibleCoeffList, function(K, r, a)
+  local l, q, count, inc, d, st, k, qq;
   # l is coefficient list, monic and constant coeff a
-  l := NullMat(1, d+1, K)[1];
-  l[d+1] := One(K);
+  # first polynomial to try is X^r + X + a
+  l := NullMat(1, r+1, K)[1];
+  l[r+1] := One(K);
   l[1] := a;
   l[2] := One(K);
   q := Size(K);
-  count := 0;
   # inc is the expected number on non-zero coeffs
   inc := 1;
-  while q^inc < 2*d do
+  while q^inc < 2*r do
     inc := inc+1;
   od;
-  dd := 1;
+  # we allow non-zero coeffs up to position d
+  d := 0;
+  count := 0;
   while not IsIrreducibleCoeffList(l, q) do
-    # after every d attempts allow inc more non-zero coeffs
-    ####if count mod (2*d) = 0 and dd < d then
-    if count mod (d) = 0 and dd < d then
-      dd := dd + inc;
-      if dd > d then
-        dd := d;
+    # after every r attempts allow inc more non-zero coeffs
+    Info(InfoStandardFF, 2, "reducible ",count,":",List(l, IntFFE),"\n");    
+    if count mod r = 0 and d < r-1 then
+      d := d + inc;
+      if d >= r then
+        d := r-1;
       fi;
-      Info(InfoStandardFF, 2, "(dd=",dd,")\c");
+      qq := q^(d-1);
+      Info(InfoStandardFF, 2, "(d=",d,")\c");
     fi;
-    st := StandardAffineShift(q^(dd-1), count);
+    st := StandardAffineShift(qq, count);
     st := CoefficientsQadic(st, q);
-    while Length(st) < dd-1 do
+    while Length(st) < d-1 do
       Add(st, 0);
     od;
-    for k in [2..dd] do
+    for k in [2..d] do
       l[k] := ElementSteinitzNumber(K, st[k-1]);
     od;
-    Info(InfoStandardFF, 2, "*\c");
+    Info(InfoStandardFF, 3, "*\c");
     count := count+1;
   od;
+  Info(InfoStandardFF, 2, "found ",count,":",List(l, IntFFE),"\n");    
   return l;
 end);
 
+# we leave this undocumented, seems to be interesting only for
+# quite large degrees?
 isirrNTL := function(cs, K)
   local d, q, prg, inp, res, p, prcoeffs, c, x;
   d:=DirectoriesPackageLibrary("StandardFF","ntl");
@@ -274,45 +284,3 @@ isirrNTL := function(cs, K)
   fi;
 end;
 
-StandardIrreducibleCoeffListNTL := function(K, d, a)
-  local l, q, count, inc, dd, st, k;
-  # l is coefficient list, monic and constant coeff a
-  l := NullMat(1, d+1, K)[1];
-  l[d+1] := One(K);
-  l[1] := a;
-  l[2] := One(K);
-  q := Size(K);
-##    if not IsPrimeInt(q) then
-##      # also for small d, say d < 500?
-##      return StandardIrreducibleCoeffList(K, d, a);
-##    fi;
-  count := 0;
-  # inc is the expected number on non-zero coeffs
-  inc := 1;
-  while q^inc < 2*d do
-    inc := inc+1;
-  od;
-  dd := 1;
-  while not isirrNTL(l, K) do
-    # after every d attempts allow inc more non-zero coeffs
-    ####if count mod (2*d) = 0 and dd < d then
-    if count mod (d) = 0 and dd < d then
-      dd := dd + inc;
-      if dd > d then
-        dd := d;
-      fi;
-      Info(InfoStandardFF, 2, "(dd=",dd,")\c");
-    fi;
-    st := StandardAffineShift(q^(dd-1), count);
-    st := CoefficientsQadic(st, q);
-    while Length(st) < dd-1 do
-      Add(st, 0);
-    od;
-    for k in [2..dd] do
-      l[k] := ElementSteinitzNumber(K, st[k-1]);
-    od;
-    Info(InfoStandardFF, 2, "*\c");
-    count := count+1;
-  od;
-  return l;
-end;
