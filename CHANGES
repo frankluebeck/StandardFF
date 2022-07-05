@@ -1,4 +1,11 @@
      Important changes between versions of StandardFF
      ================================================
 
+0.9 -> 0.9.1
+
+  - Corrected an outdated function for the prime degree r polynomials
+    when r <> p and (p-1) mod r <> 0. 
+  - Added more test examples.
+  - Some (not documented) experimental code using NTL.
+
 - initial public release: 0.9
