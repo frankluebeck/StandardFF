@@ -25,13 +25,13 @@ Persons := [
 ],
 
 SourceRepository := rec( Type := "git", URL := "https://github.com/frankluebeck/StandardFF" ),
-#IssueTrackerURL := "",
+IssueTrackerURL := "https://github.com/frankluebeck/StandardFF",
 #SupportEmail := "",
 
 PackageWWWHome := "https://www.math.rwth-aachen.de/~Frank.Luebeck/gap/StandardFF/",
 
 PackageInfoURL := Concatenation( ~.PackageWWWHome, "PackageInfo.g" ),
-README_URL     := Concatenation( ~.PackageWWWHome, "README.md" ),
+README_URL     := Concatenation( ~.PackageWWWHome, "README.txt" ),
 ArchiveURL     := Concatenation( ~.PackageWWWHome,
                                  "/", ~.PackageName, "-", ~.Version ),
 

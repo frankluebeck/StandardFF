@@ -32,4 +32,5 @@ cp doc/*.html doc/*.css doc/*.js doc/manual.pdf $WEBDIR/doc/
 echo copying index.html pkgreadme.css PackageInfo.g README.md version . . .
 cp dev/index.html dev/pkgreadme.css PackageInfo.g README.md  CHANGES VERSION $WEBDIR
 mv $WEBDIR/CHANGES $WEBDIR/CHANGES.txt
+mv $WEBDIR/README.md $WEBDIR/README.txt
 
