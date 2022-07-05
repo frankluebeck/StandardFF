@@ -54,7 +54,12 @@
 ##  <#/GAPDoc>
 ##  
 AllPrimeDegreePolynomials := function(p, bound, cache...)
-  local nam, out, T, times, rr, k, t, pl, tt, r, outc;
+  local nam, out, T, times, rr, k, t, pl, tt, r, outc, snfpd;
+  if "NTL" in cache then
+    snfpd := SteinitzNumberForPrimeDegreeNTL;
+  else
+    snfpd := SteinitzNumberForPrimeDegree;
+  fi;
   if Length(cache) > 0 and cache[1] = true then
     cache := true;
   else
@@ -79,7 +84,7 @@ AllPrimeDegreePolynomials := function(p, bound, cache...)
         t := Runtime();
         PrintTo(out,"# ",p,", ",r,", ",k,": \c");
         #pl := StandardPrimeDegreePolynomial(p,r,k);
-        pl := SteinitzNumberForPrimeDegree(p,r,k);
+        pl := snfpd(p,r,k);
         if cache then
           PrintTo(outc, "Add(STPP,",[p,r,k,pl],");\n");
         fi;

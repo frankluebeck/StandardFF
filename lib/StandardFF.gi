@@ -87,6 +87,52 @@ InstallGlobalFunction(SteinitzNumberForPrimeDegree, function(p, r, k)
   fi;
   return stpdr[k];
 end);
+# a version that tries to call external program using NTL
+InstallGlobalFunction(SteinitzNumberForPrimeDegreeNTL, function(p, r, k)
+  local Fp, stpd, stpdr, d, prg, inp, res;
+
+  # for cache same as above
+  Fp := StandardFiniteField(p, 1);
+  if not IsBound(Fp!.SteinitzPrimeDeg) then
+    Fp!.SteinitzPrimeDeg := [];
+  fi;
+  stpd := Fp!.SteinitzPrimeDeg;
+  if not IsBound(stpd[r]) then
+    stpd[r] := [];
+  fi;
+  stpdr := stpd[r];
+  if not IsBound(stpdr[k]) then
+    d := DirectoriesPackageLibrary("StandardFF","ntl");
+    # currently we only have standalone programs for k = 1 and p < 2^50
+    if k = 1 then
+      if p = 2 then
+        if r <> p and (p-1) mod r <> 0 then
+          prg := Filename(d, "findstdirrGF2");
+          if prg <> fail then
+            inp := String(r);
+            res := IO_PipeThrough(prg,[],inp);
+            stpdr[k] := Int(Filtered(res, IsDigitChar));
+          fi;
+        fi;
+      elif p < 2^50 then
+        if r <> p and (p-1) mod r <> 0 then
+          prg := Filename(d, "findstdirrGFp");
+          if prg <> fail then
+            inp := Concatenation(String(p), "\n", String(r));
+            res := IO_PipeThrough(prg,[],inp);
+            stpdr[k] := Int(Filtered(res, IsDigitChar));
+          fi;
+        fi;
+      fi;
+    fi;
+    if not IsBound(stpdr[k]) then
+      # use the GAP function
+      SteinitzNumberForPrimeDegree(p, r, k);
+    fi;
+  fi;
+  return stpdr[k];
+end);
+
 # for displaying the corresponding polynomial
 InstallGlobalFunction(StandardPrimeDegreePolynomial, function(p, r, k)
   local st, qq, K, c, v;

@@ -9,6 +9,7 @@
 
 # standard finite fields as towers of prime degree extensions
 DeclareGlobalFunction("SteinitzNumberForPrimeDegree");
+DeclareGlobalFunction("SteinitzNumberForPrimeDegreeNTL");
 DeclareGlobalFunction("StandardPrimeDegreePolynomial");
 DeclareGlobalFunction("_ExtensionWithTowerBasis");
 # standard finite fields as simple extensions over prime field GF(p)
