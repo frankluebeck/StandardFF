@@ -163,92 +163,102 @@ InstallGlobalFunction(_ExtensionWithTowerBasis, function(K, deg, lcoeffs, b)
   local dK, zK, zKl, co, d, F, zero, one, pK, vec, vecs, pols, 
         zeroes, pmat, v, w, p, piv, x, c, vnam, var, ivar, Kp, fam, i, j;
   dK := DegreeOverPrimeField(K);
-  zK := Zero(K);
   d := dK * deg;
   F := LeftActingDomain(K);
-  zero := Zero(F);
-  one := One(F);
-  pK := PrimitivePowersInTowerBasis(K);
-  co := function(x)
-    local res;
-    if dK = 1 then
-      res := [x];
-    else
-      res := x![1];
-      if not IsList(res) then
-        res := zero * [1..dK];
-        res[1] := x![1];
-      fi;
-    fi;
-    ConvertToVectorRep(res);
-    return res;
-  end;
-
-  # We collect (bX)^i mod f, i = 0..d*dK-1, and compute
-  # the minimal polynomial of bX over F.
-  # one
-  vec := NullMat(1, d, F)[1];
-  vec[1] := one;
-  vecs := [];
-  pols := [];
-  zeroes := [];
-  pmat := [];
-  # X
-  v := NullMat(1,deg,K)[1];
-  v[1] := One(K);
-  for i in [1..d+1] do
-    if i <= d then
-      Add(pmat,vec);
-    fi;
-    w := ShallowCopy(vec);
-    p := ShallowCopy(zeroes);
-    Add(p, one);
-    ConvertToVectorRepNC(p, F);
-    piv := PositionNonZero(w, 0);
-    # reduce
-    while piv <= d and IsBound(vecs[piv]) do
-        x := -w[piv];
-        if IsBound(pols[piv]) then
-            AddCoeffs(p, pols[piv], x);
-        fi;
-        AddRowVector(w, vecs[piv],  x, piv, d);
-        piv := PositionNonZero(w,piv);
+  # shortcut for prime degree over prime field
+  if dK = 1 then
+    p := ShallowCopy(lcoeffs);
+    while Length(p) < deg do
+      Add(p, 0*p[1]);
     od;
-    if i <= d then
-      x := Inverse(w[piv]);
-      MultVector(p, x);
-      MakeImmutable(p);
-      pols[piv] := p;
-      MultVector(w, x );
-      MakeImmutable(w);
-      vecs[piv] := w;
-      Add(zeroes,zero);
-
-      # multiply by  bX and find next vec in tower basis
-      v := b*v;
-      c := -v[deg];
-      for j in [deg, deg-1..2] do
-        v[j] := v[j-1];
-      od;
-      v[1] := zK;
-      if not IsZero(c) then
-        for j in [1..Length(lcoeffs)] do
-          v[j] := v[j] + c*lcoeffs[j];
-        od;
+    Add(p, One(p[1]));
+    MakeImmutable(p);
+    pmat := IdentityMat(deg, F);
+  else
+    zK := Zero(K);
+    zero := Zero(F);
+    one := One(F);
+    pK := PrimitivePowersInTowerBasis(K);
+    co := function(x)
+      local res;
+      if dK = 1 then
+        res := [x];
+      else
+        res := x![1];
+        if not IsList(res) then
+          res := zero * [1..dK];
+          res[1] := x![1];
+        fi;
       fi;
-      vec := [];
-      for c in v do
-        Append(vec, co(c) * pK);
-      od;
-      ConvertToVectorRepNC(vec, F);
-    fi;
-  od;
-  # Now the last p is the minimal polynomial over F
-  # and pmat are the primitive powers in the tower basis for the new
-  # extension.
-  MakeImmutable(p);
-  ConvertToMatrixRep(pmat);
+      ConvertToVectorRep(res);
+      return res;
+    end;
 
+    # We collect (bX)^i mod f, i = 0..d*dK-1, and compute
+    # the minimal polynomial of bX over F.
+    # one
+    vec := NullMat(1, d, F)[1];
+    vec[1] := one;
+    vecs := [];
+    pols := [];
+    zeroes := [];
+    pmat := [];
+    # X
+    v := NullMat(1,deg,K)[1];
+    v[1] := One(K);
+    for i in [1..d+1] do
+      if i <= d then
+        Add(pmat,vec);
+      fi;
+      w := ShallowCopy(vec);
+      p := ShallowCopy(zeroes);
+      Add(p, one);
+      ConvertToVectorRepNC(p, F);
+      piv := PositionNonZero(w, 0);
+      # reduce
+      while piv <= d and IsBound(vecs[piv]) do
+          x := -w[piv];
+          if IsBound(pols[piv]) then
+              AddCoeffs(p, pols[piv], x);
+          fi;
+          AddRowVector(w, vecs[piv],  x, piv, d);
+          piv := PositionNonZero(w,piv);
+      od;
+      if i <= d then
+        x := Inverse(w[piv]);
+        MultVector(p, x);
+        MakeImmutable(p);
+        pols[piv] := p;
+        MultVector(w, x );
+        MakeImmutable(w);
+        vecs[piv] := w;
+        Add(zeroes,zero);
+
+        # multiply by  bX and find next vec in tower basis
+        v := b*v;
+        c := -v[deg];
+        for j in [deg, deg-1..2] do
+          v[j] := v[j-1];
+        od;
+        v[1] := zK;
+        if not IsZero(c) then
+          for j in [1..Length(lcoeffs)] do
+            v[j] := v[j] + c*lcoeffs[j];
+          od;
+        fi;
+        vec := [];
+        for c in v do
+          Append(vec, co(c) * pK);
+        od;
+        ConvertToVectorRepNC(vec, F);
+      fi;
+    od;
+    # Now the last p is the minimal polynomial over F
+    # and pmat are the primitive powers in the tower basis for the new
+    # extension.
+    MakeImmutable(p);
+    ConvertToMatrixRep(pmat);
+  fi;
   # generate the new extension
   vnam := Concatenation("x", String(d));
   var := Indeterminate(F, vnam);
@@ -263,6 +273,10 @@ fi;
 
   Setter(IsStandardFiniteField)(Kp, true);
   Setter(PrimitivePowersInTowerBasis)(Kp, pmat);
+  if dK = 1 then
+    # identity matrix
+    Setter(TowerBasis)(Kp, pmat);
+  fi;
   # let elements know to be in standard field
   fam := FamilyObj(RootOfDefiningPolynomial(Kp));
   fam!.extType := Subtype(fam!.extType, IsStandardFiniteFieldElement);
