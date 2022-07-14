@@ -61,7 +61,7 @@ PackageDoc := rec(
 Dependencies := rec(
   GAP := ">= 4.12",
   NeededOtherPackages := [ [ "GAPDoc", ">= 1.6.5" ] ],
-  SuggestedOtherPackages := [ ],
+  SuggestedOtherPackages := [ [ "FactInt", ">= 1.6.3" ], [ "CtblLib", ">= 1.3.1" ] ],
   ExternalConditions := [ ],
 ),
 
