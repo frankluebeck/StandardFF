@@ -1,6 +1,10 @@
      Important changes between versions of StandardFF
      ================================================
 
+0.9.2 -> 0.9.3
+   - Workaround to avoid messages in automated tests by the GAP package
+     distribution (when no other packages are available).
+
 0.9.1 -> 0.9.2
    - Added `FactInt` and `CTblLib` as suggested packages (to please 
      automated package tests).
