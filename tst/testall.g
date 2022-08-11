@@ -6,6 +6,7 @@
 ##  metadata in PackageInfo.g.
 ##
 LoadPackage( "StandardFF" );
+LoadPackage( "FactInt" );
 
 TestDirectory(DirectoriesPackageLibrary( "StandardFF", "tst" ),
   rec(exitGAP := true));
