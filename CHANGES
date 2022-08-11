@@ -1,6 +1,9 @@
      Important changes between versions of StandardFF
      ================================================
 
+0.9.3 -> 0.9.4
+   - Further change to please automated CI tests in GAP distribution.
+
 0.9.2 -> 0.9.3
    - Workaround to avoid messages in automated tests by the GAP package
      distribution (when no other packages are available).
