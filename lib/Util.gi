@@ -630,16 +630,59 @@ end);
 ##  </ManSection>
 ##  <#/GAPDoc>
 ##  
+# experimental helper function, uses (a+b)^p = a^p + b^p
+BindGlobal("PowerModCoeffsChar",  function(coeffs, k, m, p)
+  local pr, d, x, xp, xps, res, c, r, i;
+  if 2*Log2Int(k) < Log2Int(p)+Length(m)+LogInt(k, p) then
+    return PowerModCoeffs(coeffs, k, m);
+  fi;
+  pr := function(l1, l2)
+    local ll;
+    ll := ProductCoeffs(l1,l2);
+    ReduceCoeffs(ll, m);
+    ShrinkRowVector(ll);
+    return ll;
+  end;
+  d := Length(m) - 1;
+  x := [Zero(coeffs[1]), One(coeffs[1])];
+  xp := PowerModCoeffs(x, p, m);
+  xps := [[x[2]], xp];
+  for i in [2..d-1] do
+    Add(xps, pr(xps[i], xp));
+  od;
+  res := xps[1];
+  c := ShallowCopy(coeffs);
+  while k <> 0 do
+    r := k mod p;
+    if r = 1 then
+      res := pr(res, c);
+    elif r > 1 then
+      res := pr(res, PowerModCoeffs(c, r, m));
+    fi;
+    k := (k-r)/p;
+    if k <> 0 then
+      # c^p
+      for i in [1..Length(c)] do
+        c[i] := c[i]^p;
+      od;
+      c := c*xps;
+    fi;
+  od;
+  ShrinkRowVector(res);
+  return res;
+end);
+
 # K finite field, cpol polynomial over K irreducible over subfield with qq
 # elements and zeroes in K.
 InstallGlobalFunction(FindConjugateZeroes, function(K, cpol, qq)
-  local fac, d, r, rr, g1, g2, z, i;
+  local p, fac, d, r, rr, g1, g2, z, i;
   if IsPolynomial(cpol) then
     cpol := One(K)*CoefficientsOfUnivariatePolynomial(cpol);
   fi;
   if Characteristic(K) = 2 then
     return FindConjugateZeroesChar2(K, cpol, qq);
   fi;
+  p := Characteristic(K);
   fac := cpol;
   d := Length(fac)-1;
   while Length(fac) > 2 do
@@ -648,7 +691,7 @@ InstallGlobalFunction(FindConjugateZeroes, function(K, cpol, qq)
     while IsZero(r) do
       r := [Random(K),One(K)];
     od;
-    rr := PowerModCoeffs(r, (Size(K)-1)/2, fac);
+    rr := PowerModCoeffsChar(r, (Size(K)-1)/2, fac, p);
     rr[1] := rr[1]-One(K);
     g1 := GcdCoeffs(rr, fac);
     rr[1] := rr[1] + 2*One(K);
@@ -689,7 +732,8 @@ end);
 # This is a specialized version of FindConjugateZeroes for the Conway
 # polynomial of the field K. It returns the list of all zeroes in K.
 InstallGlobalFunction(ZeroesConway, function(K)
-  local p, n, f, x, l, bas, fac, len, pr, c, rr, g1, g2, z, i, a;
+  local p, n, fac, dpm1, dlen, len, f, x, l, bas, pr, c, rr, d, aa, a, 
+        nfac, g, z, i, j;
   p := Characteristic(K);
   n := DegreeOverPrimeField(K);
   # Conway polynomial as polynomial coeffs over  K
@@ -697,12 +741,22 @@ InstallGlobalFunction(ZeroesConway, function(K)
   if p = 2 then
     return FindConjugateZeroesChar2(K, fac, 2);
   fi;
+  # even divisors of p-1
+  dpm1 := 2*DivisorsInt((p-1)/2);
+  dlen := function()
+    local i;
+    i := 1;
+    while i < Length(dpm1) and 3 * dpm1[i+1] < 2 * len do
+      i := i+1;
+    od;
+    return dpm1[i];
+  end;
   len := Length(fac);
   f := GF(p^n);
-  # we precompute for y = x^((p-1)/2) the list of y^(p^i) mod Conway polynomial,
-  # i < n (using GAPs arithemetic in GF(p^n)).
+  # we precompute the list of x^(p^i) mod Conway polynomial,
+  # i < n (using GAPs arithemetic in GF(p^n) and computing Z(p,n)^(p^i)).
   x := PrimitiveElement(f);
-  l := [x^((p-1)/2)];
+  l := [x];
   for i in [1..n-1] do
     Add(l, l[i]^p);
   od;
@@ -723,13 +777,14 @@ InstallGlobalFunction(ZeroesConway, function(K)
   # now we split fac
   while len > 2 do
     Info(InfoStandardFF, 4, "deg(fac) = ",Length(fac)-1, "\n");
-    # This is Cantor-Zassenhaus, since the factors of fac over K are linear 
-    # it is sufficient to try random polynomials of form X+c, c in K.
-    # We compute (X + c) ^ ((p^n-1)/2) mod fac using
+    # This is a slight variant of Cantor-Zassenhaus, since the factors of 
+    # fac over K are linear it is sufficient to try random polynomials 
+    # of form X+c, c in K.
+    # We compute (X + c) ^ ((p^n-1)/d) mod fac for some small d using
     #      (X+c)^(p^i) = X^(p^i) + c^(p^i)
     # (first summands mod fac computed above, second is computation in K)
     # and
-    #      (p^n-1)/2 = (p-1)/2 * (1 + p + p^2 + ...+ p^(n-1))
+    #      (p^n-1)/d = (1 + p + p^2 + ...+ p^(n-1)) * (p-1)/d 
     c := Random(K);
     rr := ShallowCopy(l[1]);
     rr[1] := rr[1] + c;
@@ -739,23 +794,37 @@ InstallGlobalFunction(ZeroesConway, function(K)
       rr := pr(rr, l[i]);
       l[i][1] := l[i][1] - c;
     od;
-    # now Gcd of this power +/- 1 with fac is likely to split fac
-    rr[1] := rr[1]-One(K);
-    g1 := GcdCoeffs(rr, fac);
-    rr[1] := rr[1] + 2*One(K);
-    g2 := GcdCoeffs(rr, fac);
-    if Length(g1) > Length(g2) and Length(g2) > 1 then
-      fac := g2;
-    elif Length(g1) > 1 then
-      fac := g1;
-    fi;
-    if Length(fac) < len then
-      # in case of splitting we can from now compute modulo found factor fac
-      for a in l do
-        ReduceCoeffs(a, fac);
-        ShrinkRowVector(a);
-      od;
+    # we power by (p-1)/d such that rr - a (with a^d = 1) has good probability
+    # to have non-trivial, and then low degree, gcd with fac
+    d := dlen();
+    rr := PowerModCoeffs(rr, (p-1)/d, fac);
+    # now Gcd of this power - a with fac is likely to split fac 
+    # (where a^d = 1)
+    aa := Z(p)^((p-1)/d);
+    a := aa;
+    nfac := fac;
+    for j in [1..Minimum(d, 5)] do
+      rr[1] := rr[1] - a;
+      g := GcdCoeffs(rr, fac);
+      rr[1] := rr[1] + a;
+      if Length(g) > 1 and Length(g) < Length(nfac) then
+        nfac := g;
+        if Length(nfac) = 2 then 
+          break;
+        fi;
+      fi;
+      a := a*aa;
+    od;
+    fac := nfac;
+    if Length(fac) < len  then
       len := Length(fac);
+      if len > 2 then 
+        # in case of splitting we can from now compute modulo found factor fac
+        for a in l do
+          ReduceCoeffs(a, fac);
+          ShrinkRowVector(a);
+        od;
+      fi;
     fi;
   od;
   z := [-fac[1]/fac[2]];
