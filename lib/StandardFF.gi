@@ -1143,13 +1143,20 @@ end);
 ##  <#GAPDoc Label="FFArith">
 ##  <ManSection>
 ##  <Oper Name="ZZ" Arg="p, n, coeffs" />
-##  <Returns>an element in <C>FF(p, n)</C></Returns>
+##  <Oper Name="ZZ" Arg="p, n, ffe" Label="for IsFFE" />
+##  <Returns>an element in <C>FF(<A>p</A>, <A>n</A>)</C></Returns>
 ##  <Description>
 ##  For a  prime <A>p</A>, positive  integer <A>n</A> and an  integer list
 ##  <A>coeffs</A>  this function  returns the  element in  <C>FF(<A>p</A>,
 ##  <A>n</A>)</C>  represented by  the  polynomial  with coefficient  list
 ##  <A>coeffs</A> modulo <A>p</A>. Elements  in standard finite fields are
 ##  also printed in this way.
+##  <P/>
+##  For convenience the third argument <A>ffe</A> can be in `GF(p,n)` (see
+##  <Ref  BookName="Reference"  Func="GF"  Label="for  characteristic  and
+##  degree" /> and <Ref BookName="Reference" Filt="IsFFE"/>). This returns
+##  the image of <A>ffe</A>  under the <Ref Func="StandardIsomorphismGF"/>
+##  of <C>FF(<A>p</A>,<A>n</A>)</C>.
 ##  <Example>gap> x := ZZ(19,5,[1,2,3,4,5]);
 ##  ZZ(19,5,[1,2,3,4,5])
 ##  gap> a := PrimitiveElement(FF(19,5));
@@ -1160,6 +1167,8 @@ end);
 ##  ZZ(19,5,[1])
 ##  gap> One(FF(19,5)) = ZZ(19,5,[1]);
 ##  true
+##  gap> ZZ(19,5,Z(19^5)); # zero of ConwayPolynomial(19,5)
+##  ZZ(19,5,[12,5,3,4,5])
 ##  </Example>
 ##  </Description>
 ##  </ManSection>
@@ -1173,7 +1182,7 @@ end);
 ##  <Returns>a field element </Returns>
 ##  <Description>
 ##  Here <A>x</A> and <A>y</A> must  be elements in standard finite fields
-##  (of the same charateristic).
+##  (of the same characteristic).
 ##  <P/> 
 ##  Then  <Ref Func="MoveToSmallestStandardField"  /> returns  the element
 ##  <A>x</A> as element of the smallest possible degree extension over the
@@ -1213,7 +1222,7 @@ end);
 # creating finite field elements
 InstallMethod(ZZ, ["IsPosInt", "IsPosInt", "IsList"], 
 function(p,d,c)
-  local F, res, i;
+  local F, i, fam;
   F := FF(p,d);
   if ForAll([2..Length(c)], i-> c[i] = 0) then
     return c[1] * One(F);
@@ -1224,11 +1233,19 @@ function(p,d,c)
       c[i] := 0;
     od;
   fi;
-  res := 2*PrimitiveElement(F);
-  c := Z(p)^0 * c;
-  ConvertToVectorRep(c, p);
-  res![1] := c;
-  return res;
+  fam := FamilyObj(PrimitiveElement(F));
+  c := [One(FF(p,1)) * c];
+  ConvertToVectorRep(c[1], p);
+  Objectify(fam!.extType, c);
+  return c;
+end);
+# utility method to embed FFE into standard field
+InstallOtherMethod(ZZ, ["IsPosInt", "IsPosInt", "IsFFE"],
+function(p,d,x)
+  local F, emb;
+  F := FF(p,d);
+  emb := StandardIsomorphismGF(F);
+  return x^emb;
 end);
 
 # nicer print/view for standard finite field elements

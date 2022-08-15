@@ -3,6 +3,9 @@
 
 0.9.3 -> 0.9.4
    - Further change to please automated CI tests in GAP distribution.
+   - Improved version of `ZZ`.
+   - `ZZ` can now also be used to convert IsFFE to standard finite field
+     elements.
 
 0.9.2 -> 0.9.3
    - Workaround to avoid messages in automated tests by the GAP package
