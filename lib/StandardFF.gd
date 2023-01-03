@@ -19,7 +19,8 @@ DeclareSynonym("FF", StandardFiniteField);
 DeclareProperty("IsStandardFiniteField", 
                          IsField and IsFinite and IsAlgebraicExtension);
 DeclareCategory("IsStandardFiniteFieldElement", 
-                         IsAlgebraicElement and IsKroneckerConstRep);
+                         IsAlgebraicElement and IsKroneckerConstRep and
+                         IsNoImmediateMethodsObject);
 
 DeclareAttribute("PrimitivePowersInTowerBasis", IsStandardFiniteField);
 DeclareAttribute("TowerBasis", IsStandardFiniteField);
