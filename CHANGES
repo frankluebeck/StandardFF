@@ -1,6 +1,10 @@
      Important changes between versions of StandardFF
      ================================================
 
+0.9.4 -> 0.9.5
+   - Added references to published article in Journal of Symbolic
+     Computation.
+
 0.9.3 -> 0.9.4
    - Further change to please automated CI tests in GAP distribution.
    - Improved version of `ZZ`.
