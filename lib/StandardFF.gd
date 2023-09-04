@@ -28,7 +28,7 @@ DeclareAttribute("TowerBasis", IsStandardFiniteField);
 DeclareOperation("SteinitzNumber", [IsStandardFiniteField, IsRingElement]);
 DeclareOperation("ElementSteinitzNumber", [IsStandardFiniteField, IsInt]);
 
-DeclareOperation("AsVector", [IsStandardFiniteFieldElement]);
+DeclareAttribute("AsVector", IsStandardFiniteFieldElement);
 DeclareAttribute("GeneratorMonomials", IsStandardFiniteField);
 DeclareAttribute("TowerBasisMonomials", IsStandardFiniteField);
 DeclareAttribute("AsPolynomial", IsStandardFiniteFieldElement);
