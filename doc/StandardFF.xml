@@ -29,13 +29,10 @@
     see <URL>https://www.gnu.org/licenses</URL>.
   </Copyright>
   <Colophon>
-  WARNING: This package implements the constructions in the paper 
-  <Cite Key="StdFFCyc"/>. As long as that paper is not published
-  we reserve the right to still change the definition of <E>standard</E>
-  polynomials defining finite fields and <E>standard</E> generators of 
-  cyclic multiplicative subgroups. 
-  <P/>
-  In version 1.0 and later the definitions will not be changed anymore.
+  This package implements the constructions in the paper <Cite
+  Key="StdFFCyc"/>, that is it provides relatively easy to reproduce
+  generators of finite fields and compatible generators of their
+  multiplicative cyclic subgroups.
   </Colophon>
 </TitlePage>
 
