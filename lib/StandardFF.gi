@@ -566,7 +566,7 @@ end);
 ##  gap> a := PrimitiveElement(F);; a := a^11-3*a^5+a;
 ##  ZZ(17,12,[0,1,0,0,0,14,0,0,0,0,0,1])
 ##  gap> v := AsVector(a);
-##  < mutable compressed vector length 12 over GF(17) >
+##  < immutable compressed vector length 12 over GF(17) >
 ##  gap> a = ElementVector(F, v);
 ##  true
 ##  gap> ExtRepOfObj(a) = v * TowerBasis(F);
