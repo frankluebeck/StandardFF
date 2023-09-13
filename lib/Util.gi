@@ -491,6 +491,9 @@ InstallGlobalFunction(OrderModBound, function(a, m, bound)
   return First(d, n-> PowerMod(a, n, m) = 1);
 end);
 
+if not IsBound(DLog) then
+  # otherwise this code was moved to and is already read from the GAP library
+
 ##  <#GAPDoc Label="DLog">
 ##  <ManSection>
 ##  <Func Name="DLog" Arg="base, x[, m]"/>
@@ -532,7 +535,7 @@ end);
 ##  <#/GAPDoc>
 ##  
 # helper: returns e <= r such that base^e = x or fail
-InstallGlobalFunction(DLogShanks, function(base, x, r)
+BindGlobal("DLogShanks", function(base, x, r)
   local rr, baby, ord, giant, t, pos, i, j;
   rr := RootInt(r, 2);
   baby := [One(base)];
@@ -563,7 +566,7 @@ end);
 #     base^e = x with e = a + b*r where 0 <= a < r and
 # 0 <= b < m/r, and compute a with DLogShanks and b by
 # recursion.
-InstallGlobalFunction(DLog, function(base, x, m...)
+BindGlobal("DLog", function(base, x, m...)
   local r, mm, mp, a, b;
   if Length(m) = 0 then
     m := Order(base);
@@ -602,6 +605,8 @@ function(x, base)
   fi;
   return DLog(base, x, o) * e;
 end);
+
+fi; # end if not defined in GAP library
 
 ##  <#GAPDoc Label="FindConjugateZeroes">
 ##  <ManSection>

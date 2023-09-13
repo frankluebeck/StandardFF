@@ -13,8 +13,10 @@ DeclareGlobalFunction("OrderModBound");
 
 DeclareOperation("InvModCoeffs", [IsList, IsList]);
 
-DeclareGlobalFunction("DLogShanks");
-DeclareGlobalFunction("DLog");
+if not IsBound(DLog) then
+  DeclareGlobalName("DLogShanks");
+  DeclareGlobalName("DLog");
+fi;
 
 DeclareGlobalFunction("FindConjugateZeroes");
 DeclareGlobalFunction("FindConjugateZeroesChar2");
