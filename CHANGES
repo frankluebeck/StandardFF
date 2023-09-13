@@ -1,7 +1,10 @@
      Important changes between versions of StandardFF
      ================================================
 
-0.9.4 -> 0.9.5
+0.9.4 -> 1.0
+   - Support the move of the code for 'Dlog'/'DLogShanks' to the GAP
+     library.
+   - Changed 'AsVector' to an attribute.
    - Added references to published article in Journal of Symbolic
      Computation.
 
