@@ -7,7 +7,7 @@ SetPackageInfo( rec(
 
 PackageName := "StandardFF",
 Subtitle := "Standard finite fields and cyclic generators",
-Version := "1.0",
+Version := "1.0.dev",
 Date := "13/09/2023",
 
 Persons := [
