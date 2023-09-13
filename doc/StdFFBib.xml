@@ -6,8 +6,28 @@
   <note><URL>http://myfactorcollection.mooo.com:8090/</URL></note>
 </misc></entry>
 
+<entry id="StdFFCyc"><article>
+  <author>
+    <name><first>Frank</first><last>Lübeck</last></name>
+  </author>  
+  <title>Standard generators of finite fields and their cyclic
+              subgroups</title>
+  <journal>J. Symbolic Comput.</journal>
+  <year>2023</year>
+  <volume>117</volume>
+  <pages>51--67</pages>
+  <issn>0747-7171,1095-855X</issn>
+  <mrnumber>4518734</mrnumber>
+  <mrclass>12-08 (11T30 68W30)</mrclass>
+  <url>https://doi.org/10.1016/j.jsc.2022.11.001</url>
+  <note>Similar to arXiv 2107.02257</note>
+  <other type="doi">10.1016/j.jsc.2022.11.001</other>
+  <other type="fjournal">Journal of Symbolic Computation</other>
+  <other type="keylong">luebeck2023</other>
+  <other type="printedkey">L23</other>
+</article></entry>
 
-<entry id="StdFFCyc"><misc>
+<entry id="StdFFCycPreprint"><misc>
   <author>
     <name><first>Frank</first><last>Lübeck</last></name>
   </author>
