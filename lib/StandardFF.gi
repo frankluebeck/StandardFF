@@ -928,26 +928,24 @@ BindGlobal("StPairIntVec", function(K, v)
   vv := v{ind};
   return [sd, ValuePol(vv, p)];
 end);
-GAPInfo.tmpmeth := function(F, x)
-  return StPairIntVec(F, List(AsVector(x), IntFFE));
-end;
 InstallOtherMethod(SteinitzPair, 
-    ["IsStandardFiniteField", "IsStandardFiniteFieldElement"], GAPInfo.tmpmeth);
-Unbind(GAPInfo.tmpmeth);
+    ["IsStandardFiniteField", "IsStandardFiniteFieldElement"],
+function(F, x)
+  return StPairIntVec(F, List(AsVector(x), IntFFE));
+end);
 InstallOtherMethod(SteinitzPair, ["IsStandardPrimeField", "IsFFE"], 
 function(F, x)
   return [1, SteinitzNumber(F,x)];
 end);
 
 # with Steinitz number instead of element
-GAPInfo.tmpmeth := function(F, nr)
+InstallOtherMethod(SteinitzPair,
+    ["IsStandardFiniteField", "IsInt"],
+function(F, nr)
   local p;
   p := Characteristic(F);
   return StPairIntVec(F, CoefficientsQadic(nr, p));
-end;
-InstallOtherMethod(SteinitzPair, 
-    ["IsStandardFiniteField", "IsInt"], GAPInfo.tmpmeth);
-Unbind(GAPInfo.tmpmeth);
+end);
 InstallOtherMethod(SteinitzPair, ["IsStandardPrimeField", "IsInt"], 
 function(F, nr)
   return [1, nr];
@@ -963,7 +961,7 @@ InstallOtherMethod(SteinitzPair, ["IsStandardPrimeField","IsFFE"],
 InstallOtherMethod(SteinitzPair, ["IsFFE"], x-> [1, IntFFE(x)]); 
 
 # convert Steinitz pair in Steinitz number
-GAPInfo.tmp := 
+InstallOtherMethod(SteinitzNumber, ["IsStandardFiniteField", "IsList"],
 function(K, st)
   local p, d, v, map, ind, vv;
   p := Characteristic(K);
@@ -981,9 +979,7 @@ function(K, st)
   vv := 0*[1..d];
   vv{ind} := v;
   return ValuePol(vv, p);
-end;
-InstallOtherMethod(SteinitzNumber, ["IsStandardFiniteField", "IsList"],
-GAPInfo.tmp);
+end);
 InstallOtherMethod(SteinitzNumber, ["IsStandardPrimeField", "IsList"],
 function(K, pair)
   if pair[1] <> 1 then 
