@@ -760,7 +760,7 @@ InstallGlobalFunction(ZeroesConway, function(K)
   f := GF(p^n);
   # we precompute the list of x^(p^i) mod Conway polynomial,
   # i < n (using GAPs arithemetic in GF(p^n) and computing Z(p,n)^(p^i)).
-  x := PrimitiveElement(f);
+  x := Z(p,n); # zero of fac
   l := [x];
   for i in [1..n-1] do
     Add(l, l[i]^p);
